@@ -1,0 +1,68 @@
+{
+  "project_info": {
+    "project_number": "887354715842",
+    "project_id": "medicine-reminders",
+    "storage_bucket": "medicine-reminders.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:887354715842:android:0aed7dca9d24465919955b",
+        "android_client_info": {
+          "package_name": "com.bryangerlach.medicinereminderflutter"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "887354715842-a1n2ll3l3al4esfar53d1sdccaaq96hi.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCSpMzue846m64a0RtGqFPY4BP3zFXsr4E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "887354715842-a1n2ll3l3al4esfar53d1sdccaaq96hi.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:887354715842:android:fd685f71ef61e10a19955b",
+        "android_client_info": {
+          "package_name": "com.nhervey.medicinereminder"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "887354715842-a1n2ll3l3al4esfar53d1sdccaaq96hi.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCSpMzue846m64a0RtGqFPY4BP3zFXsr4E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "887354715842-a1n2ll3l3al4esfar53d1sdccaaq96hi.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
