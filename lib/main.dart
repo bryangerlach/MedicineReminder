@@ -1,9 +1,11 @@
 // main.dart
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:medicinereminderflutter/screens/DoctorsPage.dart';
+import 'package:medicinereminderflutter/screens/HistoryPage.dart';
 import 'package:medicinereminderflutter/screens/HomePage.dart';
-import 'screens/AuthGate.dart';
-import 'screens/MedicinesPage.dart';
+import 'package:medicinereminderflutter/screens/AuthGate.dart';
+import 'package:medicinereminderflutter/screens/MedicinesPage.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,6 +29,8 @@ class MyApp extends StatelessWidget {
       '/': (context) => const AuthGate(),
       '/HomePage': (context) => const HomePage(),
       '/MedicinesPage': (context) => const MedicinesPage(title: "Medicines"),
+      '/HistoryPage': (context) => const HistoryPage(),
+      '/DoctorsPage': (context) => const DoctorsPage(),
       //MedicinesPage.routeName: (BuildContext context) => const MedicinesPage(title: "Medicines"),
     };
     return MaterialApp(

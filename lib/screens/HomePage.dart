@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../src/AlarmModel.dart';
-import 'AuthGate.dart';
-import 'MedicinesPage.dart';
+import 'package:medicinereminderflutter/src/AlarmModel.dart';
+import 'package:medicinereminderflutter/screens/AuthGate.dart';
+import 'package:medicinereminderflutter/screens/HistoryPage.dart';
+import 'package:medicinereminderflutter/screens/MedicinesPage.dart';
+import 'package:medicinereminderflutter/screens/DoctorsPage.dart';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -15,7 +17,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  // text fields' controllers
+  TimeOfDay selectedTime = TimeOfDay.now();
   final TextEditingController _timeController = TextEditingController();
 
   final CollectionReference _alarms = FirebaseFirestore.instance
@@ -35,117 +37,101 @@ class _HomePageState extends State<HomePage> {
       _timeController.text = documentSnapshot['timeVal'];
     }
 
-    await showModalBottomSheet(
-        isScrollControlled: true,
-        context: context,
-        builder: (BuildContext ctx) {
-          return Padding(
-            padding: EdgeInsets.only(
-                top: 20,
-                left: 20,
-                right: 20,
-                // prevent the soft keyboard from covering text fields
-                bottom: MediaQuery.of(ctx).viewInsets.bottom + 20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TextField(
-                  controller: _timeController,
-                  decoration: const InputDecoration(labelText: 'Time'),
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
-                ElevatedButton(
-                  child: Text(action == 'create' ? 'Create' : 'Update'),
-                  onPressed: () async {
-                    final String name = _timeController.text;
-                    if (action == 'create') {
-                      // add a new alarm in the firestore database, default to turned off?
-                      await _alarms.add({"timeVal": name, "isOn": false});
-                    }
-
-                    if (action == 'update') {
-                      // update the current alarm time
-                      await _alarms
-                          .doc(documentSnapshot!.id)
-                          .update({"timeVal": name});
-                    }
-
-                    _timeController.text = '';
-
-                    Navigator.of(context).pop();
-                  },
-                )
-              ],
-            ),
-          );
+    final TimeOfDay? timeOfDay = await showTimePicker(
+      context: context,
+      initialTime: selectedTime,
+      initialEntryMode: TimePickerEntryMode.dial,
+    );
+    if (timeOfDay != null && timeOfDay != selectedTime) {
+      setState(() {
+        selectedTime = timeOfDay;
+      });
+      if (action == 'create') {
+        // add a new alarm in the firestore database, default to turned off?
+        await _alarms.add({
+          "timeVal": "${selectedTime.hour}:${selectedTime.minute}",
+          "isOn": false
         });
+      }
+
+      if (action == 'update') {
+        // update the current alarm time
+        await _alarms.doc(documentSnapshot!.id).update({
+          "timeVal": "${selectedTime.hour}:${selectedTime.minute}"
+        });
+      }
+    }
   }
 
-  //
+  Future<void> _deleteAlarm(DocumentSnapshot? documentSnapshot) async {
+    await _alarms.doc(documentSnapshot?.id).delete();
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('You have successfully deleted an alarm')));
+  }
+
   Future<void> _viewAlarm(String alarmId, bool isOn, String timeVal) async {
     Navigator.pushNamed(context, MedicinesPage.routeName,
         arguments: AlarmModel(alarmId, isOn, timeVal));
   }
 
+  Future<void> _updateAlarmStatus(
+      DocumentSnapshot? documentSnapshot, bool value) async {
+    await _alarms.doc(documentSnapshot!.id).update({"isOn": value});
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        drawer: Drawer(
-          child: ListView(
-            padding: EdgeInsets.zero,
-            children: [
-              const DrawerHeader(
-                decoration: BoxDecoration(
-                  color: Colors.blue,
-                ),
-                child: Text('Medicine Reminder'),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            const DrawerHeader(
+              decoration: BoxDecoration(
+                color: Colors.blue,
               ),
-              ListTile(
-                title: const Text('Medicines'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.pushNamed(context, MedicinesPage.routeName,
-                      arguments: AlarmModel("all",false,"all"));
-
-                },
-              ),
-              ListTile(
-                title: const Text('Doctors'),
-                onTap: () {
-                  // Update the state of the app.
-                  // ...
-                  Navigator.pop(context);
-                },
-              ),
-              ListTile(
-                title: const Text('History'),
-                onTap: () {
-                  // Update the state of the app.
-                  // ...
-                  Navigator.pop(context);
-                },
-              ),
-              ListTile(
-                title: const Text('Settings'),
-                onTap: () {
-                  // Update the state of the app.
-                  // ...
-                  Navigator.pop(context);
-                },
-              ),
-              ListTile(
-                title: const Text('Log Out'),
-                onTap: () {
-                  Navigator.pop(context);
-                  _signOut();
-                },
-              ),
-            ],
-          ),
+              child: Text('Medicine Reminder'),
+            ),
+            ListTile(
+              title: const Text('Medicines'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, MedicinesPage.routeName,
+                    arguments: AlarmModel("all", false, "all"));
+              },
+            ),
+            ListTile(
+              title: const Text('Doctors'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, DoctorsPage.routeName);
+              },
+            ),
+            ListTile(
+              title: const Text('History'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, HistoryPage.routeName);
+              },
+            ),
+            ListTile(
+              title: const Text('Settings'),
+              onTap: () {
+                // Update the state of the app.
+                // ...
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              title: const Text('Log Out'),
+              onTap: () {
+                Navigator.pop(context);
+                _signOut();
+              },
+            ),
+          ],
         ),
+      ),
       appBar: AppBar(
         title: const Text('Medicine Reminder'),
       ),
@@ -162,17 +148,21 @@ class _HomePageState extends State<HomePage> {
                 return Card(
                   margin: const EdgeInsets.all(10),
                   child: ListTile(
-                    title: Text(documentSnapshot['timeVal']),
-                    subtitle: Text(documentSnapshot['isOn'].toString()),
+                    leading: Switch(
+                        value: documentSnapshot['isOn'],
+                        onChanged: (value) {
+                          setState(() {
+                            _updateAlarmStatus(documentSnapshot, value);
+                          });
+                        }),
+                    title: TextButton(
+                      onPressed: () =>
+                          _createOrUpdate(documentSnapshot),
+                      child: Text(documentSnapshot['timeVal'])),
                     trailing: SizedBox(
                       width: 100,
                       child: Row(
                         children: [
-                          // edit alarm button
-                          IconButton(
-                              icon: const Icon(Icons.edit),
-                              onPressed: () =>
-                                  _createOrUpdate(documentSnapshot)),
                           // view alarm medicines button
                           IconButton(
                               icon: const Icon(Icons.medication_liquid_rounded),
@@ -180,6 +170,11 @@ class _HomePageState extends State<HomePage> {
                                   documentSnapshot.id,
                                   documentSnapshot['isOn'],
                                   documentSnapshot['timeVal'])),
+                          // delete alarm button
+                          IconButton(
+                              icon: const Icon(Icons.delete),
+                              onPressed: () =>
+                                  _deleteAlarm(documentSnapshot)),
                         ],
                       ),
                     ),

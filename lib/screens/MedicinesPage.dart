@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import '../src/AlarmModel.dart';
+import 'package:medicinereminderflutter/src/AlarmModel.dart';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
 final CollectionReference _meds = FirebaseFirestore.instance
