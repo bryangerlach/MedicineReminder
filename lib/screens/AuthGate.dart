@@ -13,7 +13,7 @@ class AuthGate extends StatelessWidget {
       builder: (context, snapshot) {
         // User is not signed in
         if (!snapshot.hasData) {
-          return SignInScreen(
+          return const SignInScreen(
             providerConfigs: [
               EmailProviderConfiguration(),
             ],
@@ -21,7 +21,7 @@ class AuthGate extends StatelessWidget {
         }
 
         // Render your application if authenticated
-        return HomePage();
+        return const HomePage();
       },
     );
   }

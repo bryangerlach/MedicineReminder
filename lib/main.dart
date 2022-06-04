@@ -1,8 +1,9 @@
 // main.dart
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:medicinereminderflutter/screens/HomePage.dart';
 import 'screens/AuthGate.dart';
-import 'screens/SecondScreen.dart';
+import 'screens/MedicinesPage.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,13 +25,16 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var routes = <String, WidgetBuilder>{
-      SecondScreen.routeName: (BuildContext context) => new SecondScreen(title: "SecondScreen"),
+      '/': (context) => const AuthGate(),
+      '/HomePage': (context) => const HomePage(),
+      '/MedicinesPage': (context) => const MedicinesPage(title: "Medicines"),
+      //MedicinesPage.routeName: (BuildContext context) => const MedicinesPage(title: "Medicines"),
     };
     return MaterialApp(
       // Remove the debug banner
       debugShowCheckedModeBanner: false,
       title: 'Medicine Reminder',
-      home: AuthGate(),
+      initialRoute: '/',
       routes: routes,
     );
   }
