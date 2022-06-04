@@ -17,8 +17,8 @@ class _HomePageState extends State<HomePage> {
   // text fields' controllers
   final TextEditingController _timeController = TextEditingController();
 
-  final CollectionReference _alarms =
-  FirebaseFirestore.instance.collection('users')
+  final CollectionReference _alarms = FirebaseFirestore.instance
+      .collection('users')
       .doc(_auth.currentUser?.uid)
       .collection("alarms");
 
@@ -39,10 +39,7 @@ class _HomePageState extends State<HomePage> {
                 left: 20,
                 right: 20,
                 // prevent the soft keyboard from covering text fields
-                bottom: MediaQuery
-                    .of(ctx)
-                    .viewInsets
-                    .bottom + 20),
+                bottom: MediaQuery.of(ctx).viewInsets.bottom + 20),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -83,13 +80,61 @@ class _HomePageState extends State<HomePage> {
 
   //
   Future<void> _viewAlarm(String alarmId, bool isOn, String timeVal) async {
-      Navigator.pushNamed(context, MedicinesPage.routeName,
-          arguments: AlarmModel(alarmId, isOn, timeVal));
+    Navigator.pushNamed(context, MedicinesPage.routeName,
+        arguments: AlarmModel(alarmId, isOn, timeVal));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        drawer: Drawer(
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: [
+              const DrawerHeader(
+                decoration: BoxDecoration(
+                  color: Colors.blue,
+                ),
+                child: Text('Medicine Reminder'),
+              ),
+              ListTile(
+                title: const Text('Medicines'),
+                onTap: () {
+                  // Update the state of the app.
+                  // ...
+                },
+              ),
+              ListTile(
+                title: const Text('Doctors'),
+                onTap: () {
+                  // Update the state of the app.
+                  // ...
+                },
+              ),
+              ListTile(
+                title: const Text('History'),
+                onTap: () {
+                  // Update the state of the app.
+                  // ...
+                },
+              ),
+              ListTile(
+                title: const Text('Settings'),
+                onTap: () {
+                  // Update the state of the app.
+                  // ...
+                },
+              ),
+              ListTile(
+                title: const Text('Log Out'),
+                onTap: () {
+                  // Update the state of the app.
+                  // ...
+                },
+              ),
+            ],
+          ),
+        ),
       appBar: AppBar(
         title: const Text('Medicine Reminder'),
       ),
@@ -101,7 +146,8 @@ class _HomePageState extends State<HomePage> {
             return ListView.builder(
               itemCount: streamSnapshot.data!.docs.length,
               itemBuilder: (context, index) {
-                final DocumentSnapshot documentSnapshot = streamSnapshot.data!.docs[index];
+                final DocumentSnapshot documentSnapshot =
+                    streamSnapshot.data!.docs[index];
                 return Card(
                   margin: const EdgeInsets.all(10),
                   child: ListTile(
@@ -119,8 +165,10 @@ class _HomePageState extends State<HomePage> {
                           // view alarm medicines button
                           IconButton(
                               icon: const Icon(Icons.medication_liquid_rounded),
-                              onPressed: () =>
-                                  _viewAlarm(documentSnapshot.id, documentSnapshot['isOn'], documentSnapshot['timeVal'])),
+                              onPressed: () => _viewAlarm(
+                                  documentSnapshot.id,
+                                  documentSnapshot['isOn'],
+                                  documentSnapshot['timeVal'])),
                         ],
                       ),
                     ),

@@ -5,8 +5,8 @@ import 'package:firebase_storage/firebase_storage.dart';
 import '../src/AlarmModel.dart';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
-final CollectionReference _meds =
-FirebaseFirestore.instance.collection('users')
+final CollectionReference _meds = FirebaseFirestore.instance
+    .collection('users')
     .doc(_auth.currentUser?.uid)
     .collection("medicines");
 
@@ -67,9 +67,10 @@ class _MedicinesPageState extends State<MedicinesPage> {
                                 AsyncSnapshot<String> image) {
                               if (image.hasData) {
                                 return RotationTransition(
-                                    turns: AlwaysStoppedAnimation(documentSnapshot['rotation'] / 360),
-                                    child: Image.network(image.data.toString()),
-                                );// image is ready
+                                  turns: AlwaysStoppedAnimation(
+                                      documentSnapshot['rotation'] / 360),
+                                  child: Image.network(image.data.toString()),
+                                ); // image is ready
                               } else {
                                 return Container(); // placeholder while awaiting image
                               }
@@ -77,6 +78,23 @@ class _MedicinesPageState extends State<MedicinesPage> {
                           )),
                       title: Text(documentSnapshot['name']),
                       subtitle: Text(documentSnapshot['description']),
+                      trailing: SizedBox(
+                        width: 100,
+                        child: Row(
+                          children: [
+                            // edit alarm button
+                            IconButton(
+                                icon: const Icon(Icons.edit),
+                                onPressed: () =>
+                                    _createOrUpdate(documentSnapshot, args.id)),
+                            // view alarm medicines button
+                            IconButton(
+                                icon: const Icon(Icons.delete),
+                                onPressed: () =>
+                                    _deleteMedicine(documentSnapshot)),
+                          ],
+                        ),
+                      ),
                     ),
                   );
                 },
@@ -99,10 +117,17 @@ class _MedicinesPageState extends State<MedicinesPage> {
   }
 
   Future<void> _onFloatingActionButtonPressed(String alarmId) async {
-    _createOrUpdate(null,alarmId);
+    _createOrUpdate(null, alarmId);
   }
 
-  Future<void> _createOrUpdate(DocumentSnapshot? documentSnapshot, String alarmId) async {
+  Future<void> _deleteMedicine(DocumentSnapshot? documentSnapshot) async {
+    await _meds.doc(documentSnapshot?.id).delete();
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('You have successfully deleted a medicine')));
+  }
+
+  Future<void> _createOrUpdate(
+      DocumentSnapshot? documentSnapshot, String alarmId) async {
     String action = 'create';
     if (documentSnapshot != null) {
       action = 'update';
@@ -119,10 +144,7 @@ class _MedicinesPageState extends State<MedicinesPage> {
                 left: 20,
                 right: 20,
                 // prevent the soft keyboard from covering text fields
-                bottom: MediaQuery
-                    .of(ctx)
-                    .viewInsets
-                    .bottom + 20),
+                bottom: MediaQuery.of(ctx).viewInsets.bottom + 20),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -146,7 +168,11 @@ class _MedicinesPageState extends State<MedicinesPage> {
                     if (action == 'create') {
                       // add a new medicine in the firestore database
 
-                      await _meds.add({"name": name, "description": desc, "alarm_id": alarmId});
+                      await _meds.add({
+                        "name": name,
+                        "description": desc,
+                        "alarm_id": alarmId
+                      });
                     }
 
                     if (action == 'update') {
@@ -170,9 +196,7 @@ class _MedicinesPageState extends State<MedicinesPage> {
 
   Future<String> loadImage(String medId) async {
     //collect the image name
-    DocumentSnapshot variable = await _meds
-        .doc(medId)
-        .get();
+    DocumentSnapshot variable = await _meds.doc(medId).get();
 
     Reference ref = FirebaseStorage.instance.refFromURL(variable["imageDL"]);
 
