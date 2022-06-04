@@ -6,6 +6,8 @@ import 'HomePage.dart';
 class AuthGate extends StatelessWidget {
   const AuthGate({Key? key}) : super(key: key);
 
+  static const String routeName = "/AuthGate";
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<User?>(

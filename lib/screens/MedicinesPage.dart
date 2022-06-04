@@ -28,19 +28,19 @@ class _MedicinesPageState extends State<MedicinesPage> {
   @override
   Widget build(BuildContext context) {
     final args = ModalRoute.of(context)!.settings.arguments as AlarmModel;
-    FirebaseFirestore db = FirebaseFirestore.instance;
-
+    var medStream;
+    //FirebaseFirestore db = FirebaseFirestore.instance;
+    if(args.id == "all") {
+      medStream = _meds.snapshots();
+    } else {
+      medStream = _meds.where("alarm_id", isEqualTo: args.id).snapshots();
+    }
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
       ),
       body: StreamBuilder(
-          stream: db
-              .collection('users')
-              .doc(_auth.currentUser?.uid)
-              .collection("medicines")
-              .where("alarm_id", isEqualTo: args.id)
-              .snapshots(),
+          stream: medStream,
           builder: (context, AsyncSnapshot<QuerySnapshot> streamSnapshot) {
             if (!streamSnapshot.hasData) {
               return const CircularProgressIndicator();

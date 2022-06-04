@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../src/AlarmModel.dart';
+import 'AuthGate.dart';
 import 'MedicinesPage.dart';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -21,6 +22,11 @@ class _HomePageState extends State<HomePage> {
       .collection('users')
       .doc(_auth.currentUser?.uid)
       .collection("alarms");
+
+  Future<void> _signOut() async {
+    await FirebaseAuth.instance.signOut();
+    Navigator.pushReplacementNamed(context, AuthGate.routeName);
+  }
 
   Future<void> _createOrUpdate([DocumentSnapshot? documentSnapshot]) async {
     String action = 'create';
@@ -100,8 +106,10 @@ class _HomePageState extends State<HomePage> {
               ListTile(
                 title: const Text('Medicines'),
                 onTap: () {
-                  // Update the state of the app.
-                  // ...
+                  Navigator.pop(context);
+                  Navigator.pushNamed(context, MedicinesPage.routeName,
+                      arguments: AlarmModel("all",false,"all"));
+
                 },
               ),
               ListTile(
@@ -109,6 +117,7 @@ class _HomePageState extends State<HomePage> {
                 onTap: () {
                   // Update the state of the app.
                   // ...
+                  Navigator.pop(context);
                 },
               ),
               ListTile(
@@ -116,6 +125,7 @@ class _HomePageState extends State<HomePage> {
                 onTap: () {
                   // Update the state of the app.
                   // ...
+                  Navigator.pop(context);
                 },
               ),
               ListTile(
@@ -123,13 +133,14 @@ class _HomePageState extends State<HomePage> {
                 onTap: () {
                   // Update the state of the app.
                   // ...
+                  Navigator.pop(context);
                 },
               ),
               ListTile(
                 title: const Text('Log Out'),
                 onTap: () {
-                  // Update the state of the app.
-                  // ...
+                  Navigator.pop(context);
+                  _signOut();
                 },
               ),
             ],
