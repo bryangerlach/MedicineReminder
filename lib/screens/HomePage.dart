@@ -1,3 +1,4 @@
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -6,6 +7,9 @@ import 'package:medicinereminderflutter/screens/AuthGate.dart';
 import 'package:medicinereminderflutter/screens/HistoryPage.dart';
 import 'package:medicinereminderflutter/screens/MedicinesPage.dart';
 import 'package:medicinereminderflutter/screens/DoctorsPage.dart';
+import 'package:flutter_native_timezone/flutter_native_timezone.dart';
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -19,6 +23,8 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   TimeOfDay selectedTime = TimeOfDay.now();
   final TextEditingController _timeController = TextEditingController();
+
+
 
   final CollectionReference _alarms = FirebaseFirestore.instance
       .collection('users')
@@ -79,6 +85,36 @@ class _HomePageState extends State<HomePage> {
     await _alarms.doc(documentSnapshot!.id).update({"isOn": value});
   }
 
+
+
+  Future<void> _setAlarm(int hour, int minute) async {
+    /// Set right date and time for notifications
+    DateTime _convertTime(int hour, int minutes) {
+      DateTime scheduleDate = DateTime(
+        DateTime.now().year,
+        DateTime.now().month,
+        DateTime.now().day,
+        hour,
+        minutes,
+      );
+      if (scheduleDate.isBefore(DateTime.now())) {
+        scheduleDate = scheduleDate.add(const Duration(days: 1));
+      }
+      print(scheduleDate);
+      return scheduleDate;
+    }
+
+    AwesomeNotifications().createNotification(
+        content: NotificationContent(
+            id: 10,
+            channelKey: 'basic_channel',
+            title: 'Simple Notification',
+            body: 'Simple body'
+        ),
+        schedule: NotificationCalendar.fromDate(date: _convertTime(hour,minute), preciseAlarm: false)
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -117,9 +153,8 @@ class _HomePageState extends State<HomePage> {
             ListTile(
               title: const Text('Settings'),
               onTap: () {
-                // Update the state of the app.
-                // ...
                 Navigator.pop(context);
+                _setAlarm(15,43);
               },
             ),
             ListTile(
