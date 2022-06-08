@@ -35,6 +35,8 @@ class _HomePageState extends State<HomePage> {
               //todo: handle the notification button press?
               if(receivedNotification.toMap()['buttonKeyPressed'] == "TAKEN") {
                 print("taken");
+              } else if(receivedNotification.toMap()['buttonKeyPressed'] == "SNOOZE") {
+                print("snoozed");
               } else {
                 print("tapped");
               }
@@ -119,6 +121,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _setAlarmWithHM(int hour, int minutes, int notId) async {
+    //todo: we need to get the medicine names and descriptions for the alarm
     AwesomeNotifications().createNotification(
         content: NotificationContent(
             id: notId,
@@ -129,6 +132,11 @@ class _HomePageState extends State<HomePage> {
           NotificationActionButton(
             key: 'TAKEN',
             label: 'Taken',
+            buttonType: ActionButtonType.KeepOnTop,
+          ),
+          NotificationActionButton(
+            key: 'SNOOZE',
+            label: 'Snooze',
             buttonType: ActionButtonType.KeepOnTop,
           )
         ],
