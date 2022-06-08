@@ -19,28 +19,34 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  @override
-  void initState() {
-    super.initState();
-    AwesomeNotifications().actionStream.listen(
-            (ReceivedNotification receivedNotification){
-              //todo: handle the notification button press?
-              //print(receivedNotification.toMap().toString());
-              if(receivedNotification.toMap()['buttonKeyPressed'] == "TAKEN") {
-                print("taken");
-              } else {
-                print("tapped");
-              }
-              //print(receivedNotification.body);
-        }
-    );
-  }
+
   TimeOfDay selectedTime = TimeOfDay.now();
 
   final CollectionReference _alarms = FirebaseFirestore.instance
       .collection('users')
       .doc(_auth.currentUser?.uid)
       .collection("alarms");
+
+  @override
+  void initState() {
+    super.initState();
+    AwesomeNotifications().actionStream.listen(
+            (ReceivedNotification receivedNotification){
+              //todo: handle the notification button press?
+              if(receivedNotification.toMap()['buttonKeyPressed'] == "TAKEN") {
+                print("taken");
+              } else {
+                print("tapped");
+              }
+        }
+    );
+    if(!kIsWeb){_checkSetAlarms();}
+  }
+
+  Future<void> _checkSetAlarms() async {
+    //todo: read the alarms db and check the scheduled alarms,
+    //schedule any alarms that are on but not scheduled
+  }
 
   Future<void> _signOut() async {
     await FirebaseAuth.instance.signOut();
