@@ -19,6 +19,22 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  @override
+  void initState() {
+    super.initState();
+    AwesomeNotifications().actionStream.listen(
+            (ReceivedNotification receivedNotification){
+              //todo: handle the notification button press?
+              //print(receivedNotification.toMap().toString());
+              if(receivedNotification.toMap()['buttonKeyPressed'] == "TAKEN") {
+                print("taken");
+              } else {
+                print("tapped");
+              }
+              //print(receivedNotification.body);
+        }
+    );
+  }
   TimeOfDay selectedTime = TimeOfDay.now();
 
   final CollectionReference _alarms = FirebaseFirestore.instance
@@ -103,6 +119,13 @@ class _HomePageState extends State<HomePage> {
             channelKey: 'basic_channel',
             title: 'Simple Notification',
             body: 'Simple body'),
+        actionButtons: [
+          NotificationActionButton(
+            key: 'TAKEN',
+            label: 'Taken',
+            buttonType: ActionButtonType.KeepOnTop,
+          )
+        ],
         //schedule: NotificationCalendar.fromDate(date: _convertTime(hour, minutes), preciseAlarm: false, repeats: true,));
         schedule: NotificationCalendar(
             hour: hour,
