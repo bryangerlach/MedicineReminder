@@ -7,9 +7,7 @@ import 'package:medicinereminderflutter/screens/AuthGate.dart';
 import 'package:medicinereminderflutter/screens/HistoryPage.dart';
 import 'package:medicinereminderflutter/screens/MedicinesPage.dart';
 import 'package:medicinereminderflutter/screens/DoctorsPage.dart';
-import 'package:flutter_native_timezone/flutter_native_timezone.dart';
-import 'package:timezone/data/latest.dart' as tz;
-import 'package:timezone/timezone.dart' as tz;
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -22,9 +20,6 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   TimeOfDay selectedTime = TimeOfDay.now();
-  final TextEditingController _timeController = TextEditingController();
-
-
 
   final CollectionReference _alarms = FirebaseFirestore.instance
       .collection('users')
@@ -40,7 +35,6 @@ class _HomePageState extends State<HomePage> {
     String action = 'create';
     if (documentSnapshot != null) {
       action = 'update';
-      _timeController.text = documentSnapshot['timeVal'];
     }
 
     final TimeOfDay? timeOfDay = await showTimePicker(
@@ -56,21 +50,27 @@ class _HomePageState extends State<HomePage> {
         // add a new alarm in the firestore database, default to turned off?
         await _alarms.add({
           "timeVal": "${selectedTime.hour}:${selectedTime.minute}",
-          "isOn": false
+          "isOn": false,
+          "notifyId": DateTime.now().millisecondsSinceEpoch.remainder(100000)
         });
       }
 
       if (action == 'update') {
         // update the current alarm time
-        await _alarms.doc(documentSnapshot!.id).update({
-          "timeVal": "${selectedTime.hour}:${selectedTime.minute}"
-        });
+        await _alarms
+            .doc(documentSnapshot!.id)
+            .update({"timeVal": "${selectedTime.hour}:${selectedTime.minute}"});
+        if(documentSnapshot['isOn']) {
+          _setAlarmWithHM(selectedTime.hour, selectedTime.minute,
+              documentSnapshot['notifyId']);
+        }
       }
     }
   }
 
   Future<void> _deleteAlarm(DocumentSnapshot? documentSnapshot) async {
     await _alarms.doc(documentSnapshot?.id).delete();
+    _cancelAlarm(documentSnapshot);
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text('You have successfully deleted an alarm')));
   }
@@ -82,37 +82,72 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _updateAlarmStatus(
       DocumentSnapshot? documentSnapshot, bool value) async {
+    if (!kIsWeb) {
+      if (value) {
+        _setAlarm(documentSnapshot);
+      } else {
+        _cancelAlarm(documentSnapshot);
+      }
+    }
     await _alarms.doc(documentSnapshot!.id).update({"isOn": value});
   }
 
+  Future<void> _cancelAlarm(DocumentSnapshot? documentSnapshot) async {
+    await AwesomeNotifications().cancel(documentSnapshot?['notifyId']);
+  }
 
-
-  Future<void> _setAlarm(int hour, int minute) async {
-    /// Set right date and time for notifications
-    DateTime _convertTime(int hour, int minutes) {
-      DateTime scheduleDate = DateTime(
-        DateTime.now().year,
-        DateTime.now().month,
-        DateTime.now().day,
-        hour,
-        minutes,
-      );
-      if (scheduleDate.isBefore(DateTime.now())) {
-        scheduleDate = scheduleDate.add(const Duration(days: 1));
-      }
-      print(scheduleDate);
-      return scheduleDate;
-    }
-
+  Future<void> _setAlarmWithHM(int hour, int minutes, int notId) async {
     AwesomeNotifications().createNotification(
         content: NotificationContent(
-            id: 10,
+            id: notId,
             channelKey: 'basic_channel',
             title: 'Simple Notification',
-            body: 'Simple body'
-        ),
-        schedule: NotificationCalendar.fromDate(date: _convertTime(hour,minute), preciseAlarm: false)
-    );
+            body: 'Simple body'),
+        //schedule: NotificationCalendar.fromDate(date: _convertTime(hour, minutes), preciseAlarm: false, repeats: true,));
+        schedule: NotificationCalendar(
+            hour: hour,
+            minute: minutes,
+            second: 0,
+            repeats: true,
+            timeZone:
+            await AwesomeNotifications().getLocalTimeZoneIdentifier()));
+  }
+
+  Future<void> _setAlarm(DocumentSnapshot? documentSnapshot) async {
+    String stringTime = documentSnapshot?['timeVal'];
+    int idx = stringTime.indexOf(":");
+    List parts = [
+      stringTime.substring(0, idx).trim(),
+      stringTime.substring(idx + 1).trim()
+    ];
+    int hour = int.parse(parts[0]);
+    int minutes = int.parse(parts[1]);
+
+    _setAlarmWithHM(hour, minutes, documentSnapshot?['notifyId']);
+  }
+
+  String _getTimeAMPM(String stringTime) {
+    int idx = stringTime.indexOf(":");
+    List parts = [
+      stringTime.substring(0, idx).trim(),
+      stringTime.substring(idx + 1).trim()
+    ];
+    int hour = int.parse(parts[0]);
+    int minutes = int.parse(parts[1]);
+    String ampm;
+    if (hour > 12) {
+      hour = hour - 12;
+      ampm = "PM";
+    } else if (hour == 0) {
+      hour = 12;
+      ampm = "AM";
+    } else {
+      ampm = "AM";
+    }
+
+    String timeString =
+        "$hour:${minutes.toString().padLeft(2, '0')} $ampm";
+    return timeString;
   }
 
   @override
@@ -154,7 +189,6 @@ class _HomePageState extends State<HomePage> {
               title: const Text('Settings'),
               onTap: () {
                 Navigator.pop(context);
-                _setAlarm(15,43);
               },
             ),
             ListTile(
@@ -191,9 +225,11 @@ class _HomePageState extends State<HomePage> {
                           });
                         }),
                     title: TextButton(
-                      onPressed: () =>
-                          _createOrUpdate(documentSnapshot),
-                      child: Text(documentSnapshot['timeVal'])),
+                        onPressed: () => _createOrUpdate(documentSnapshot),
+                        child: Text(
+                          _getTimeAMPM(documentSnapshot['timeVal']),
+                          style: const TextStyle(fontSize: 35),
+                        )),
                     trailing: SizedBox(
                       width: 100,
                       child: Row(
@@ -208,8 +244,7 @@ class _HomePageState extends State<HomePage> {
                           // delete alarm button
                           IconButton(
                               icon: const Icon(Icons.delete),
-                              onPressed: () =>
-                                  _deleteAlarm(documentSnapshot)),
+                              onPressed: () => _deleteAlarm(documentSnapshot)),
                         ],
                       ),
                     ),

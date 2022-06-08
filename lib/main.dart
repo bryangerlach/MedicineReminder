@@ -7,10 +7,11 @@ import 'package:medicinereminderflutter/screens/HistoryPage.dart';
 import 'package:medicinereminderflutter/screens/HomePage.dart';
 import 'package:medicinereminderflutter/screens/AuthGate.dart';
 import 'package:medicinereminderflutter/screens/MedicinesPage.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  notificationInit();
+  if(!kIsWeb) {notificationInit();}
   await Firebase.initializeApp(
       options: const FirebaseOptions(
           apiKey: "AIzaSyCkVX5xS4niK2gFJRgAE9oBuOJBNR2ZdeI",
