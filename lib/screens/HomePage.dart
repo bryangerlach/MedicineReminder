@@ -7,6 +7,7 @@ import 'package:medicinereminderflutter/screens/AuthGate.dart';
 import 'package:medicinereminderflutter/screens/HistoryPage.dart';
 import 'package:medicinereminderflutter/screens/MedicinesPage.dart';
 import 'package:medicinereminderflutter/screens/DoctorsPage.dart';
+import 'package:medicinereminderflutter/src/Utility.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -34,20 +35,15 @@ class _HomePageState extends State<HomePage> {
             (ReceivedNotification receivedNotification){
               //todo: handle the notification button press?
               if(receivedNotification.toMap()['buttonKeyPressed'] == "TAKEN") {
-                print("taken");
+                Utility.taken();
               } else if(receivedNotification.toMap()['buttonKeyPressed'] == "SNOOZE") {
-                print("snoozed");
+                Utility.snoozed();
               } else {
-                print("tapped");
+                Utility.tapped();
               }
         }
     );
-    if(!kIsWeb){_checkSetAlarms();}
-  }
-
-  Future<void> _checkSetAlarms() async {
-    //todo: read the alarms db and check the scheduled alarms,
-    //schedule any alarms that are on but not scheduled
+    if(!kIsWeb){Utility.checkSetAlarms();}
   }
 
   Future<void> _signOut() async {
@@ -85,7 +81,7 @@ class _HomePageState extends State<HomePage> {
             .doc(documentSnapshot!.id)
             .update({"timeVal": "${selectedTime.hour}:${selectedTime.minute}"});
         if(documentSnapshot['isOn']) {
-          _setAlarmWithHM(selectedTime.hour, selectedTime.minute,
+          Utility.setAlarmWithHM(selectedTime.hour, selectedTime.minute,
               documentSnapshot['notifyId']);
         }
       }
@@ -120,36 +116,6 @@ class _HomePageState extends State<HomePage> {
     await AwesomeNotifications().cancel(documentSnapshot?['notifyId']);
   }
 
-  Future<void> _setAlarmWithHM(int hour, int minutes, int notId) async {
-    //todo: we need to get the medicine names and descriptions for the alarm
-    AwesomeNotifications().createNotification(
-        content: NotificationContent(
-            id: notId,
-            channelKey: 'basic_channel',
-            title: 'Simple Notification',
-            body: 'Simple body'),
-        actionButtons: [
-          NotificationActionButton(
-            key: 'TAKEN',
-            label: 'Taken',
-            buttonType: ActionButtonType.KeepOnTop,
-          ),
-          NotificationActionButton(
-            key: 'SNOOZE',
-            label: 'Snooze',
-            buttonType: ActionButtonType.KeepOnTop,
-          )
-        ],
-        //schedule: NotificationCalendar.fromDate(date: _convertTime(hour, minutes), preciseAlarm: false, repeats: true,));
-        schedule: NotificationCalendar(
-            hour: hour,
-            minute: minutes,
-            second: 0,
-            repeats: true,
-            timeZone:
-            await AwesomeNotifications().getLocalTimeZoneIdentifier()));
-  }
-
   Future<void> _setAlarm(DocumentSnapshot? documentSnapshot) async {
     String stringTime = documentSnapshot?['timeVal'];
     int idx = stringTime.indexOf(":");
@@ -160,31 +126,7 @@ class _HomePageState extends State<HomePage> {
     int hour = int.parse(parts[0]);
     int minutes = int.parse(parts[1]);
 
-    _setAlarmWithHM(hour, minutes, documentSnapshot?['notifyId']);
-  }
-
-  String _getTimeAMPM(String stringTime) {
-    int idx = stringTime.indexOf(":");
-    List parts = [
-      stringTime.substring(0, idx).trim(),
-      stringTime.substring(idx + 1).trim()
-    ];
-    int hour = int.parse(parts[0]);
-    int minutes = int.parse(parts[1]);
-    String ampm;
-    if (hour > 12) {
-      hour = hour - 12;
-      ampm = "PM";
-    } else if (hour == 0) {
-      hour = 12;
-      ampm = "AM";
-    } else {
-      ampm = "AM";
-    }
-
-    String timeString =
-        "$hour:${minutes.toString().padLeft(2, '0')} $ampm";
-    return timeString;
+    Utility.setAlarmWithHM(hour, minutes, documentSnapshot?['notifyId']);
   }
 
   @override
@@ -264,7 +206,7 @@ class _HomePageState extends State<HomePage> {
                     title: TextButton(
                         onPressed: () => _createOrUpdate(documentSnapshot),
                         child: Text(
-                          _getTimeAMPM(documentSnapshot['timeVal']),
+                          Utility.getTimeAMPM(documentSnapshot['timeVal']),
                           style: const TextStyle(fontSize: 35),
                         )),
                     trailing: SizedBox(
