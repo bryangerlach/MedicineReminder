@@ -16,9 +16,20 @@ class Utility {
     print("tapped");
   }
 
+  static Future<String> getScheduledAlarms() async {
+    Future<List<NotificationModel>> fetch() =>
+        AwesomeNotifications().listScheduledNotifications();
+    var schedule = await fetch();
+    schedule.forEach((item) {
+      print('${item.content?.id.toString()} : ${item.schedule.toString()}');
+    });
+    return '$schedule';
+  }
+
   static Future<void> checkSetAlarms() async {
     //todo: read the alarms db and check the scheduled alarms,
     //schedule any alarms that are on but not scheduled
+    print(await getScheduledAlarms());
   }
 
   static String getTimeAMPM(String stringTime) {
