@@ -3,12 +3,20 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:medicinereminderflutter/src/AlarmModel.dart';
+import 'package:medicinereminderflutter/src/MedicinesCode.dart';
+
+//todo: capture image
+//todo: taken today checkbox, makes entry to history
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
 final CollectionReference _meds = FirebaseFirestore.instance
     .collection('users')
     .doc(_auth.currentUser?.uid)
     .collection("medicines");
+final CollectionReference _medNames = FirebaseFirestore.instance
+    .collection('users')
+    .doc(_auth.currentUser?.uid)
+    .collection("medicineNames");
 
 class MedicinesPage extends StatefulWidget {
   const MedicinesPage({Key? key, required this.title}) : super(key: key);
@@ -28,7 +36,7 @@ class _MedicinesPageState extends State<MedicinesPage> {
   @override
   Widget build(BuildContext context) {
     final args = ModalRoute.of(context)!.settings.arguments as AlarmModel;
-    var medStream;
+    Stream<QuerySnapshot<Object?>> medStream;
     //FirebaseFirestore db = FirebaseFirestore.instance;
     if(args.id == "all") {
       medStream = _meds.snapshots();
@@ -134,64 +142,12 @@ class _MedicinesPageState extends State<MedicinesPage> {
       _nameController.text = documentSnapshot['name'];
       _descController.text = documentSnapshot['description'];
     }
-    await showModalBottomSheet(
-        isScrollControlled: true,
-        context: context,
-        builder: (BuildContext ctx) {
-          return Padding(
-            padding: EdgeInsets.only(
-                top: 20,
-                left: 20,
-                right: 20,
-                // prevent the soft keyboard from covering text fields
-                bottom: MediaQuery.of(ctx).viewInsets.bottom + 20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TextField(
-                  controller: _nameController,
-                  decoration: const InputDecoration(labelText: 'Name'),
-                ),
-                TextField(
-                  controller: _descController,
-                  decoration: const InputDecoration(labelText: 'Description'),
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
-                ElevatedButton(
-                  child: Text(action == 'create' ? 'Create' : 'Update'),
-                  onPressed: () async {
-                    final String name = _nameController.text;
-                    final String desc = _descController.text;
-                    if (action == 'create') {
-                      // add a new medicine in the firestore database
+    //todo: this should first show a list of current meds (from _medNames) with an add button
+    //todo: the add button does below, adds med to _medNames and _meds
+    //todo: selecting a med only adds to _meds
+    //MedicinesCode.showMeds();
+    MedicinesCode.createEditMed(context, _nameController, _descController, action, _meds, alarmId, documentSnapshot);
 
-                      await _meds.add({
-                        "name": name,
-                        "description": desc,
-                        "alarm_id": alarmId
-                      });
-                    }
-
-                    if (action == 'update') {
-                      // update the current alarm time
-                      await _meds
-                          .doc(documentSnapshot!.id)
-                          .update({"name": name, "description": desc});
-                    }
-
-                    _nameController.text = '';
-                    _descController.text = '';
-
-                    Navigator.of(context).pop();
-                  },
-                )
-              ],
-            ),
-          );
-        });
   }
 
   Future<String> loadImage(String medId) async {

@@ -49,6 +49,7 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _signOut() async {
     await FirebaseAuth.instance.signOut();
+    await AlarmsCode.cancelAllAlarms();
     Navigator.pushReplacementNamed(context, AuthGate.routeName);
   }
 

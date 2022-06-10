@@ -1,4 +1,5 @@
 class NotificationsCode {
+  //todo: make these function work
   static Future<void> taken() async {
     print("taken");
   }

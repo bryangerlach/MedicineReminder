@@ -1,5 +1,6 @@
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -19,7 +20,7 @@ class AlarmsCode {
     setAlarmWithHM(hour, minutes, documentSnapshot?['notifyId'], documentSnapshot!.id);
   }
 
-  static Future<void> getScheduledAlarms(CollectionReference _alarms) async {
+  static Future<void> getScheduledAlarms(CollectionReference alarms) async {
     Future<List<NotificationModel>> fetch() =>
         AwesomeNotifications().listScheduledNotifications();
     var schedule = await fetch();
@@ -28,7 +29,7 @@ class AlarmsCode {
       //add all notification ids to a list
       idList.add(item.content!.id);
     }
-    _alarms.get().then(
+    alarms.get().then(
           (res) {
             for (DocumentSnapshot documentSnapshot in res.docs) { //all alarms
               if (idList.contains(documentSnapshot['notifyId'])) {
@@ -44,14 +45,13 @@ class AlarmsCode {
   }
 
   static Future<void> setAlarmWithHM(int hour, int minutes, int notId, String alarmId) async {
-    //todo: we need to get the medicine names and descriptions for the alarm
-    //todo: get firebase listing of all meds with alarmId
+
     AwesomeNotifications().createNotification(
         content: NotificationContent(
             id: notId,
             channelKey: 'basic_channel',
-            title: 'Simple Notification',
-            body: 'Simple body'),
+            title: await getMedNames(alarmId),
+            body: await getMedNames(alarmId)),
         actionButtons: [
           NotificationActionButton(
             key: 'TAKEN',
@@ -72,6 +72,31 @@ class AlarmsCode {
             repeats: true,
             timeZone:
             await AwesomeNotifications().getLocalTimeZoneIdentifier()));
+  }
+
+  static Future<String> getMedNames(String alarmId) async {
+    final FirebaseAuth auth = FirebaseAuth.instance;
+    final Query meds = FirebaseFirestore.instance
+        .collection('users')
+        .doc(auth.currentUser?.uid)
+        .collection("medicines");
+    Future<List<String>> getData() async {
+      List<String> medNames = [];
+      var myMeds = await meds.where("alarm_id", isEqualTo: alarmId).get().then((res) {
+        for (DocumentSnapshot documentSnapshot in res.docs) { //all alarms
+          medNames.add("${documentSnapshot['name']}: ${documentSnapshot['description']}");
+        }
+        return medNames;
+      });
+      return myMeds;
+    }
+    var medicineName = await getData();
+    String returnString = "";
+    for (String item in medicineName) {
+      returnString = "$returnString\n$item";
+    }
+
+    return returnString;
   }
 
   static String getTimeAMPM(String stringTime) {
@@ -99,19 +124,23 @@ class AlarmsCode {
   }
 
   static Future<void> cancelAlarm(DocumentSnapshot? documentSnapshot) async {
-    await AwesomeNotifications().cancel(documentSnapshot?['notifyId']);
+    await AwesomeNotifications().cancelSchedule(documentSnapshot?['notifyId']);
+  }
+
+  static Future<void> cancelAllAlarms() async {
+    await AwesomeNotifications().cancelAllSchedules();
   }
 
   static Future<void> deleteAlarm(DocumentSnapshot? documentSnapshot,
-      CollectionReference _alarms, BuildContext context) async {
-    await _alarms.doc(documentSnapshot?.id).delete();
+      CollectionReference alarms, BuildContext context) async {
+    await alarms.doc(documentSnapshot?.id).delete();
     cancelAlarm(documentSnapshot);
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text('You have successfully deleted an alarm')));
   }
 
   static Future<void> updateAlarmStatus(
-      DocumentSnapshot? documentSnapshot, bool value, CollectionReference _alarms) async {
+      DocumentSnapshot? documentSnapshot, bool value, CollectionReference alarms) async {
     if (!kIsWeb) {
       if (value) {
         setAlarm(documentSnapshot);
@@ -119,6 +148,6 @@ class AlarmsCode {
         cancelAlarm(documentSnapshot);
       }
     }
-    await _alarms.doc(documentSnapshot!.id).update({"isOn": value});
+    await alarms.doc(documentSnapshot!.id).update({"isOn": value});
   }
 }
