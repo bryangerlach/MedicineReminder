@@ -36,7 +36,7 @@ class _HomePageState extends State<HomePage> {
             (ReceivedNotification receivedNotification){
               //todo: handle the notification button press?
               if(receivedNotification.toMap()['buttonKeyPressed'] == "TAKEN") {
-                NotificationsCode.taken();
+                NotificationsCode.taken(receivedNotification);
               } else if(receivedNotification.toMap()['buttonKeyPressed'] == "SNOOZE") {
                 NotificationsCode.snoozed();
               } else {

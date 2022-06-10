@@ -45,13 +45,14 @@ class AlarmsCode {
   }
 
   static Future<void> setAlarmWithHM(int hour, int minutes, int notId, String alarmId) async {
-
     AwesomeNotifications().createNotification(
         content: NotificationContent(
             id: notId,
             channelKey: 'basic_channel',
             title: await getMedNames(alarmId),
-            body: await getMedNames(alarmId)),
+            body: await getMedNames(alarmId),
+            payload: {"alarmId": alarmId},),
+
         actionButtons: [
           NotificationActionButton(
             key: 'TAKEN',
