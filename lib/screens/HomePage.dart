@@ -7,7 +7,8 @@ import 'package:medicinereminderflutter/screens/AuthGate.dart';
 import 'package:medicinereminderflutter/screens/HistoryPage.dart';
 import 'package:medicinereminderflutter/screens/MedicinesPage.dart';
 import 'package:medicinereminderflutter/screens/DoctorsPage.dart';
-import 'package:medicinereminderflutter/src/Utility.dart';
+import 'package:medicinereminderflutter/src/AlarmsCode.dart';
+import 'package:medicinereminderflutter/src/NotificationsCode.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -35,15 +36,15 @@ class _HomePageState extends State<HomePage> {
             (ReceivedNotification receivedNotification){
               //todo: handle the notification button press?
               if(receivedNotification.toMap()['buttonKeyPressed'] == "TAKEN") {
-                Utility.taken();
+                NotificationsCode.taken();
               } else if(receivedNotification.toMap()['buttonKeyPressed'] == "SNOOZE") {
-                Utility.snoozed();
+                NotificationsCode.snoozed();
               } else {
-                Utility.tapped();
+                NotificationsCode.tapped();
               }
         }
     );
-    if(!kIsWeb){Utility.checkSetAlarms();}
+    if(!kIsWeb){AlarmsCode.getScheduledAlarms(_alarms);}
   }
 
   Future<void> _signOut() async {
@@ -81,52 +82,16 @@ class _HomePageState extends State<HomePage> {
             .doc(documentSnapshot!.id)
             .update({"timeVal": "${selectedTime.hour}:${selectedTime.minute}"});
         if(documentSnapshot['isOn']) {
-          Utility.setAlarmWithHM(selectedTime.hour, selectedTime.minute,
-              documentSnapshot['notifyId']);
+          AlarmsCode.setAlarmWithHM(selectedTime.hour, selectedTime.minute,
+              documentSnapshot['notifyId'], documentSnapshot.id);
         }
       }
     }
   }
 
-  Future<void> _deleteAlarm(DocumentSnapshot? documentSnapshot) async {
-    await _alarms.doc(documentSnapshot?.id).delete();
-    _cancelAlarm(documentSnapshot);
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('You have successfully deleted an alarm')));
-  }
-
   Future<void> _viewAlarm(String alarmId, bool isOn, String timeVal) async {
     Navigator.pushNamed(context, MedicinesPage.routeName,
         arguments: AlarmModel(alarmId, isOn, timeVal));
-  }
-
-  Future<void> _updateAlarmStatus(
-      DocumentSnapshot? documentSnapshot, bool value) async {
-    if (!kIsWeb) {
-      if (value) {
-        _setAlarm(documentSnapshot);
-      } else {
-        _cancelAlarm(documentSnapshot);
-      }
-    }
-    await _alarms.doc(documentSnapshot!.id).update({"isOn": value});
-  }
-
-  Future<void> _cancelAlarm(DocumentSnapshot? documentSnapshot) async {
-    await AwesomeNotifications().cancel(documentSnapshot?['notifyId']);
-  }
-
-  Future<void> _setAlarm(DocumentSnapshot? documentSnapshot) async {
-    String stringTime = documentSnapshot?['timeVal'];
-    int idx = stringTime.indexOf(":");
-    List parts = [
-      stringTime.substring(0, idx).trim(),
-      stringTime.substring(idx + 1).trim()
-    ];
-    int hour = int.parse(parts[0]);
-    int minutes = int.parse(parts[1]);
-
-    Utility.setAlarmWithHM(hour, minutes, documentSnapshot?['notifyId']);
   }
 
   @override
@@ -200,13 +165,13 @@ class _HomePageState extends State<HomePage> {
                         value: documentSnapshot['isOn'],
                         onChanged: (value) {
                           setState(() {
-                            _updateAlarmStatus(documentSnapshot, value);
+                            AlarmsCode.updateAlarmStatus(documentSnapshot, value, _alarms);
                           });
                         }),
                     title: TextButton(
                         onPressed: () => _createOrUpdate(documentSnapshot),
                         child: Text(
-                          Utility.getTimeAMPM(documentSnapshot['timeVal']),
+                          AlarmsCode.getTimeAMPM(documentSnapshot['timeVal']),
                           style: const TextStyle(fontSize: 35),
                         )),
                     trailing: SizedBox(
@@ -223,7 +188,7 @@ class _HomePageState extends State<HomePage> {
                           // delete alarm button
                           IconButton(
                               icon: const Icon(Icons.delete),
-                              onPressed: () => _deleteAlarm(documentSnapshot)),
+                              onPressed: () => AlarmsCode.deleteAlarm(documentSnapshot,_alarms,context)),
                         ],
                       ),
                     ),
