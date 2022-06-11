@@ -34,8 +34,8 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     AwesomeNotifications().actionStream.listen(
             (ReceivedNotification receivedNotification){
-              //todo: handle the notification button press?
-              if(receivedNotification.toMap()['buttonKeyPressed'] == "TAKEN") {
+;
+if(receivedNotification.toMap()['buttonKeyPressed'] == "TAKEN") {
                 NotificationsCode.taken(receivedNotification);
               } else if(receivedNotification.toMap()['buttonKeyPressed'] == "SNOOZE") {
                 NotificationsCode.snoozed();
@@ -161,40 +161,53 @@ class _HomePageState extends State<HomePage> {
                     streamSnapshot.data!.docs[index];
                 return Card(
                   margin: const EdgeInsets.all(10),
-                  child: ListTile(
-                    leading: Switch(
-                        value: documentSnapshot['isOn'],
-                        onChanged: (value) {
-                          setState(() {
-                            AlarmsCode.updateAlarmStatus(documentSnapshot, value, _alarms);
-                          });
-                        }),
-                    title: TextButton(
+                  child: Column(
+                    children: [
+                      ListTile(
+                      title: TextButton(
                         onPressed: () => _createOrUpdate(documentSnapshot),
                         child: Text(
                           AlarmsCode.getTimeAMPM(documentSnapshot['timeVal']),
-                          style: const TextStyle(fontSize: 35),
+                          style: const TextStyle(fontSize: 50),
                         )),
-                    trailing: SizedBox(
-                      width: 100,
-                      child: Row(
-                        children: [
-                          // view alarm medicines button
-                          IconButton(
-                              icon: const Icon(Icons.medication_liquid_rounded),
-                              onPressed: () => _viewAlarm(
-                                  documentSnapshot.id,
-                                  documentSnapshot['isOn'],
-                                  documentSnapshot['timeVal'])),
-                          // delete alarm button
-                          IconButton(
-                              icon: const Icon(Icons.delete),
-                              onPressed: () => AlarmsCode.deleteAlarm(documentSnapshot,_alarms,context)),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
+                        trailing: Switch(
+                            value: documentSnapshot['isOn'],
+                            onChanged: (value) {
+                              setState(() {
+                                AlarmsCode.updateAlarmStatus(documentSnapshot, value, _alarms);
+                              });
+                            }),),
+                            SizedBox(
+                              //width: 100,
+                              child: Row(
+                                children: [
+                                  // view alarm medicines button
+                                  Expanded(
+                                    child: Align(
+                                      alignment: Alignment.centerLeft,
+                                        child:
+                                          TextButton.icon(
+                                            label: const Text("View Medicines"),
+                                            icon: const Icon(Icons.medication_liquid_rounded),
+                                            onPressed: () => _viewAlarm(
+                                              documentSnapshot.id,
+                                              documentSnapshot['isOn'],
+                                              documentSnapshot['timeVal'])),)),
+                                  //const SizedBox(width: 30,),
+                                  // delete alarm button
+                                  Expanded(
+                                    child: Align(
+                                      alignment: Alignment.centerRight,
+                                      child:
+                                        TextButton.icon(
+                                          label: const Text("Delete"),
+                                          icon: const Icon(Icons.delete),
+                                          onPressed: () => AlarmsCode.deleteAlarm(documentSnapshot,_alarms,context)),))
+                                ],
+                              ),
+                            )]),
+                        );
+
               },
             );
           }
