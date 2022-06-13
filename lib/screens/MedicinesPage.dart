@@ -19,11 +19,10 @@ final CollectionReference _medNames = FirebaseFirestore.instance
     .collection("medicineNames");
 
 class MedicinesPage extends StatefulWidget {
-  const MedicinesPage({Key? key, required this.title}) : super(key: key);
+  const MedicinesPage({Key? key}) : super(key: key);
 
   static const String routeName = "/MedicinesPage";
 
-  final String title;
 
   @override
   _MedicinesPageState createState() => _MedicinesPageState();
@@ -45,7 +44,7 @@ class _MedicinesPageState extends State<MedicinesPage> {
     }
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: Text("Medicines"),
       ),
       body: StreamBuilder(
           stream: medStream,
@@ -61,49 +60,51 @@ class _MedicinesPageState extends State<MedicinesPage> {
                       streamSnapshot.data!.docs[index];
                   return Card(
                     margin: const EdgeInsets.all(10),
-                    child: ListTile(
-                      leading: ConstrainedBox(
-                          constraints: const BoxConstraints(
-                            minWidth: 44,
-                            minHeight: 44,
-                            maxWidth: 64,
-                            maxHeight: 64,
-                          ),
-                          child: FutureBuilder<String>(
-                            future: loadImage(documentSnapshot.id),
-                            builder: (BuildContext context,
+                    child: Column(
+                      children: [
+                        ListTile(
+                          leading: ConstrainedBox(
+                            constraints: const BoxConstraints(
+                              minWidth: 44,
+                              minHeight: 44,
+                              maxWidth: 64,
+                              maxHeight: 64,
+                            ),
+                            child: FutureBuilder<String>(
+                              future: loadImage(documentSnapshot.id),
+                              builder: (BuildContext context,
                                 AsyncSnapshot<String> image) {
-                              if (image.hasData) {
-                                return RotationTransition(
-                                  turns: AlwaysStoppedAnimation(
-                                      documentSnapshot['rotation'] / 360),
-                                  child: Image.network(image.data.toString()),
-                                ); // image is ready
-                              } else {
-                                return Container(); // placeholder while awaiting image
-                              }
-                            },
-                          )),
-                      title: Text(documentSnapshot['name']),
-                      subtitle: Text(documentSnapshot['description']),
-                      trailing: SizedBox(
-                        width: 100,
-                        child: Row(
-                          children: [
-                            // edit alarm button
-                            IconButton(
-                                icon: const Icon(Icons.edit),
-                                onPressed: () =>
+                                  if (image.hasData) {
+                                    return RotationTransition(
+                                      turns: AlwaysStoppedAnimation(
+                                        documentSnapshot['rotation'] / 360),
+                                        child: Image.network(image.data.toString()),
+                                    ); // image is ready
+                                  } else {
+                                    return Container(); // placeholder while awaiting image
+                                  }
+                              },
+                            )),
+                          title: Text(documentSnapshot['name']),
+                          subtitle: Text(documentSnapshot['description']),
+                          trailing: SizedBox(
+                            width: 100,
+                            child: Row(
+                              children: [
+                              // edit alarm button
+                                IconButton(
+                                  icon: const Icon(Icons.edit),
+                                  onPressed: () =>
                                     _createOrUpdate(documentSnapshot, args.id)),
-                            // view alarm medicines button
-                            IconButton(
-                                icon: const Icon(Icons.delete),
-                                onPressed: () =>
+                                // view alarm medicines button
+                                IconButton(
+                                  icon: const Icon(Icons.delete),
+                                  onPressed: () =>
                                     _deleteMedicine(documentSnapshot)),
-                          ],
+                              ],
+                            ),
                         ),
-                      ),
-                    ),
+                      ),])
                   );
                 },
               );

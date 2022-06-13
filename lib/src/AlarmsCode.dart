@@ -1,9 +1,9 @@
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AlarmsCode {
 
@@ -45,12 +45,24 @@ class AlarmsCode {
   }
 
   static Future<void> setAlarmWithHM(int hour, int minutes, int notId, String alarmId) async {
+
+    final prefs = await SharedPreferences.getInstance();
+    final bool? np = prefs.getBool('note_persistence');
+    bool notePersistence = false;
+    if(np == null) {
+      notePersistence = false;
+      await prefs.setBool('note_persistence', false);
+    } else {
+      notePersistence = true;
+    }
+
     AwesomeNotifications().createNotification(
         content: NotificationContent(
             id: notId,
             channelKey: 'basic_channel',
             title: await getMedNames(alarmId),
             body: await getMedNames(alarmId),
+            locked: notePersistence,
             payload: {"alarmId": alarmId},),
 
         actionButtons: [

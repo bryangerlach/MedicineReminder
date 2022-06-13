@@ -7,6 +7,7 @@ import 'package:medicinereminderflutter/screens/HistoryPage.dart';
 import 'package:medicinereminderflutter/screens/HomePage.dart';
 import 'package:medicinereminderflutter/screens/AuthGate.dart';
 import 'package:medicinereminderflutter/screens/MedicinesPage.dart';
+import 'package:medicinereminderflutter/screens/SettingsPage.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
 void main() async {
@@ -63,9 +64,10 @@ class MyApp extends StatelessWidget {
     var routes = <String, WidgetBuilder>{
       '/': (context) => const AuthGate(),
       '/HomePage': (context) => const HomePage(),
-      '/MedicinesPage': (context) => const MedicinesPage(title: "Medicines"),
+      '/MedicinesPage': (context) => const MedicinesPage(),
       '/HistoryPage': (context) => const HistoryPage(),
       '/DoctorsPage': (context) => const DoctorsPage(),
+      '/SettingsPage': (context) => const SettingsPage(),
       //MedicinesPage.routeName: (BuildContext context) => const MedicinesPage(title: "Medicines"),
     };
 

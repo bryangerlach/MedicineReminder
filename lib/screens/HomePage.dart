@@ -9,6 +9,7 @@ import 'package:medicinereminderflutter/screens/MedicinesPage.dart';
 import 'package:medicinereminderflutter/screens/DoctorsPage.dart';
 import 'package:medicinereminderflutter/src/AlarmsCode.dart';
 import 'package:medicinereminderflutter/src/NotificationsCode.dart';
+import 'package:medicinereminderflutter/screens/SettingsPage.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -34,8 +35,8 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     AwesomeNotifications().actionStream.listen(
             (ReceivedNotification receivedNotification){
-;
-if(receivedNotification.toMap()['buttonKeyPressed'] == "TAKEN") {
+
+    if(receivedNotification.toMap()['buttonKeyPressed'] == "TAKEN") {
                 NotificationsCode.taken(receivedNotification);
               } else if(receivedNotification.toMap()['buttonKeyPressed'] == "SNOOZE") {
                 NotificationsCode.snoozed();
@@ -134,6 +135,7 @@ if(receivedNotification.toMap()['buttonKeyPressed'] == "TAKEN") {
               title: const Text('Settings'),
               onTap: () {
                 Navigator.pop(context);
+                Navigator.pushNamed(context, SettingsPage.routeName);
               },
             ),
             ListTile(
