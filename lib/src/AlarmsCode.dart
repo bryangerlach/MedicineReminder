@@ -53,7 +53,7 @@ class AlarmsCode {
       notePersistence = false;
       await prefs.setBool('note_persistence', false);
     } else {
-      notePersistence = true;
+      notePersistence = np;
     }
 
     AwesomeNotifications().createNotification(

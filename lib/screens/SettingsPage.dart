@@ -1,5 +1,5 @@
-
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({Key? key}) : super(key: key);
@@ -10,19 +10,41 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
+  bool _persistenceCheckbox = false;
+
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-        title: Text("Settings"),
-    ),
-    body: ListView(
-      children:const [
-        ListTile(
-          title: Text("hello"),
-        )
-      ]
-    ));
+  void initState() {
+    super.initState();
+
+    _loadswitchValue();
   }
 
+  _loadswitchValue() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _persistenceCheckbox = (prefs.getBool('note_persistence')) ?? false;
+    });
+  }
+
+  _savenswitchValue() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      prefs.setBool('note_persistence', _persistenceCheckbox);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CheckboxListTile(
+      title: const Text('Persistent Notification'),
+      value: _persistenceCheckbox,
+      onChanged: (bool? value) {
+        setState(() {
+          _persistenceCheckbox = value!;
+          _savenswitchValue();
+        });
+      },
+      secondary: const Icon(Icons.hourglass_empty),
+    );
+  }
 }
