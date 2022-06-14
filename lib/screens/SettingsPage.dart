@@ -16,17 +16,17 @@ class _SettingsPageState extends State<SettingsPage> {
   void initState() {
     super.initState();
 
-    _loadswitchValue();
+    _loadSwitchValue();
   }
 
-  _loadswitchValue() async {
+  _loadSwitchValue() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       _persistenceCheckbox = (prefs.getBool('note_persistence')) ?? false;
     });
   }
 
-  _savenswitchValue() async {
+  _saveSwitchValue() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       prefs.setBool('note_persistence', _persistenceCheckbox);
@@ -35,16 +35,21 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return CheckboxListTile(
-      title: const Text('Persistent Notification'),
-      value: _persistenceCheckbox,
-      onChanged: (bool? value) {
-        setState(() {
-          _persistenceCheckbox = value!;
-          _savenswitchValue();
-        });
-      },
-      secondary: const Icon(Icons.hourglass_empty),
-    );
+    return Scaffold(
+        appBar: AppBar(
+          title: const Text('Medicine Reminder'),
+        ),
+        // Use a StreamBuilder to display alarms from Firestore
+        body: CheckboxListTile(
+          title: const Text('Persistent Notification'),
+          value: _persistenceCheckbox,
+          onChanged: (bool? value) {
+            setState(() {
+              _persistenceCheckbox = value!;
+              _saveSwitchValue();
+            });
+          },
+          secondary: const Icon(Icons.hourglass_empty),
+        ));
   }
 }
