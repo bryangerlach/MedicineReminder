@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:intl/intl.dart';
 import 'package:medicinereminderflutter/src/AlarmModel.dart';
 import 'package:medicinereminderflutter/src/MedicinesCode.dart';
 
@@ -23,7 +24,6 @@ class MedicinesPage extends StatefulWidget {
 
   static const String routeName = "/MedicinesPage";
 
-
   @override
   _MedicinesPageState createState() => _MedicinesPageState();
 }
@@ -37,14 +37,14 @@ class _MedicinesPageState extends State<MedicinesPage> {
     final args = ModalRoute.of(context)!.settings.arguments as AlarmModel;
     Stream<QuerySnapshot<Object?>> medStream;
     //FirebaseFirestore db = FirebaseFirestore.instance;
-    if(args.id == "all") {
+    if (args.id == "all") {
       medStream = _meds.snapshots();
     } else {
       medStream = _meds.where("alarm_id", isEqualTo: args.id).snapshots();
     }
     return Scaffold(
       appBar: AppBar(
-        title: Text("Medicines"),
+        title: const Text("Medicines"),
       ),
       body: StreamBuilder(
           stream: medStream,
@@ -59,32 +59,32 @@ class _MedicinesPageState extends State<MedicinesPage> {
                   final DocumentSnapshot documentSnapshot =
                       streamSnapshot.data!.docs[index];
                   return Card(
-                    margin: const EdgeInsets.all(10),
-                    child: Column(
-                      children: [
+                      margin: const EdgeInsets.all(10),
+                      child: Column(children: [
                         ListTile(
                           leading: ConstrainedBox(
-                            constraints: const BoxConstraints(
-                              minWidth: 44,
-                              minHeight: 44,
-                              maxWidth: 64,
-                              maxHeight: 64,
-                            ),
-                            child: FutureBuilder<String>(
-                              future: loadImage(documentSnapshot.id),
-                              builder: (BuildContext context,
-                                AsyncSnapshot<String> image) {
+                              constraints: const BoxConstraints(
+                                minWidth: 44,
+                                minHeight: 44,
+                                maxWidth: 64,
+                                maxHeight: 64,
+                              ),
+                              child: FutureBuilder<String>(
+                                future: loadImage(documentSnapshot.id),
+                                builder: (BuildContext context,
+                                    AsyncSnapshot<String> image) {
                                   if (image.hasData) {
                                     return RotationTransition(
                                       turns: AlwaysStoppedAnimation(
-                                        documentSnapshot['rotation'] / 360),
-                                        child: Image.network(image.data.toString()),
+                                          documentSnapshot['rotation'] / 360),
+                                      child:
+                                          Image.network(image.data.toString()),
                                     ); // image is ready
                                   } else {
                                     return Container(); // placeholder while awaiting image
                                   }
-                              },
-                            )),
+                                },
+                              )),
                           //todo: add the taken checkbox
                           title: Text(documentSnapshot['name']),
                           subtitle: Text(documentSnapshot['description']),
@@ -92,21 +92,37 @@ class _MedicinesPageState extends State<MedicinesPage> {
                             width: 100,
                             child: Row(
                               children: [
-                              // edit alarm button
-                                IconButton(
-                                  icon: const Icon(Icons.edit),
-                                  onPressed: () =>
-                                    _createOrUpdate(documentSnapshot, args.id)),
+                                // edit alarm button
+                                TextButton.icon(
+                                    label: const Text("Edit"),
+                                    icon: const Icon(Icons.edit),
+                                    onPressed: () => _createOrUpdate(
+                                        documentSnapshot, args.id)),
                                 // view alarm medicines button
-                                IconButton(
-                                  icon: const Icon(Icons.delete),
-                                  onPressed: () =>
-                                    _deleteMedicine(documentSnapshot)),
                               ],
                             ),
+                          ),
                         ),
-                      ),])
-                  );
+                        ListTile(
+                          leading: Checkbox(
+                              value:
+                                  _getTakenToday(documentSnapshot['taken_date']),
+                              onChanged: (bool? value) {
+                                bool today = value ?? false;
+                                if(today) {
+                                  _setTakenDate(true, documentSnapshot.id);
+                                } else {
+                                  _setTakenDate(false, documentSnapshot.id);
+                                }
+                              }),
+                          title: const Text('Taken today?'),
+                          trailing: TextButton.icon(
+                              label: const Text("Delete"),
+                              icon: const Icon(Icons.delete),
+                              onPressed: () =>
+                                  _deleteMedicine(documentSnapshot)),
+                        ),
+                      ]));
                 },
               );
             } else {
@@ -130,6 +146,27 @@ class _MedicinesPageState extends State<MedicinesPage> {
     _createOrUpdate(null, alarmId);
   }
 
+  bool _getTakenToday(String takenDate) {
+    DateTime now = DateTime.now();
+    String formattedDate = DateFormat.yMd().format(now);
+    if (takenDate == formattedDate) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  void _setTakenDate(bool today, String medId) {
+    DateTime now;
+    if(today) {
+      now = DateTime.now();
+    } else {
+      now = DateTime.now().subtract(Duration(days:1));
+    }
+    String formattedDate = DateFormat.yMd().format(now);
+    _meds.doc(medId).update({"taken_date": formattedDate});
+  }
+
   Future<void> _deleteMedicine(DocumentSnapshot? documentSnapshot) async {
     await _meds.doc(documentSnapshot?.id).delete();
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -148,8 +185,8 @@ class _MedicinesPageState extends State<MedicinesPage> {
     //todo: the add button does below, adds med to _medNames and _meds
     //todo: selecting a med only adds to _meds
     //MedicinesCode.showMeds();
-    MedicinesCode.createEditMed(context, _nameController, _descController, action, _meds, alarmId, documentSnapshot);
-
+    MedicinesCode.createEditMed(context, _nameController, _descController,
+        action, _meds, alarmId, documentSnapshot);
   }
 
   Future<String> loadImage(String medId) async {
