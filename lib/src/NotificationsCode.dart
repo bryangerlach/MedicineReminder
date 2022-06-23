@@ -4,11 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 
 class NotificationsCode {
-  //todo: make these function work
   static Future<void> taken(ReceivedNotification receivedNotification) async {
-    print("taken");
-    print(receivedNotification.payload?["alarmId"]);
-    //todo: match the alarmId received with ones from the medicine firestore
     final FirebaseAuth auth = FirebaseAuth.instance;
     final CollectionReference meds = FirebaseFirestore.instance
         .collection('users')
@@ -36,6 +32,7 @@ class NotificationsCode {
 
   static Future<void> snoozed() async {
     print("snoozed");
+    //todo: this should snooze the notification for x minutes
   }
 
   static Future<void> tapped() async {

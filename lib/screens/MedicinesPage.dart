@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:intl/intl.dart';
 import 'package:medicinereminderflutter/src/AlarmModel.dart';
+import 'package:medicinereminderflutter/src/MedicineModel.dart';
 import 'package:medicinereminderflutter/src/MedicinesCode.dart';
+import 'package:medicinereminderflutter/screens/ImagePage.dart';
 
 //todo: capture image
 //todo: taken today checkbox, makes entry to history
@@ -75,11 +77,26 @@ class _MedicinesPageState extends State<MedicinesPage> {
                                     AsyncSnapshot<String> image) {
                                   if (image.hasData) {
                                     return RotationTransition(
-                                      turns: AlwaysStoppedAnimation(
-                                          documentSnapshot['rotation'] / 360),
-                                      child:
-                                          Image.network(image.data.toString()),
-                                    ); // image is ready
+                                        turns: AlwaysStoppedAnimation(
+                                            documentSnapshot['rotation'] / 360),
+                                        child: GestureDetector(
+                                          onTap: () {
+                                            Navigator.pushNamed(
+                                                context, ImagePage.routeName,
+                                                arguments: MedicineModel(
+                                                    documentSnapshot.id,
+                                                    documentSnapshot["alarm_id"],
+                                                    documentSnapshot["description"],
+                                                    documentSnapshot["image"],
+                                                    documentSnapshot["imageDL"],
+                                                    documentSnapshot["rotation"],
+                                                    documentSnapshot["name"],
+                                                    documentSnapshot["taken_date"],
+                                                    documentSnapshot["thumbDL"]));
+                                          },
+                                          child: Image.network(
+                                              image.data.toString()),
+                                        )); // image is ready
                                   } else {
                                     return Container(); // placeholder while awaiting image
                                   }
@@ -105,11 +122,11 @@ class _MedicinesPageState extends State<MedicinesPage> {
                         ),
                         ListTile(
                           leading: Checkbox(
-                              value:
-                                  _getTakenToday(documentSnapshot['taken_date']),
+                              value: _getTakenToday(
+                                  documentSnapshot['taken_date']),
                               onChanged: (bool? value) {
                                 bool today = value ?? false;
-                                if(today) {
+                                if (today) {
                                   _setTakenDate(true, documentSnapshot.id);
                                 } else {
                                   _setTakenDate(false, documentSnapshot.id);
@@ -158,10 +175,10 @@ class _MedicinesPageState extends State<MedicinesPage> {
 
   void _setTakenDate(bool today, String medId) {
     DateTime now;
-    if(today) {
+    if (today) {
       now = DateTime.now();
     } else {
-      now = DateTime.now().subtract(Duration(days:1));
+      now = DateTime.now().subtract(Duration(days: 1));
     }
     String formattedDate = DateFormat.yMd().format(now);
     _meds.doc(medId).update({"taken_date": formattedDate});
