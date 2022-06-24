@@ -21,36 +21,54 @@ class ImagePage extends StatefulWidget {
 }
 
 class _ImagePageState extends State<ImagePage> {
-
+  int imageRotation = 0;
+  bool firstRun = true;
   @override
   void initState() {
     super.initState();
+    //imageRotation = 0;
   }
 
   @override
   Widget build(BuildContext context) {
     final args = ModalRoute.of(context)!.settings.arguments as MedicineModel;
+    if(firstRun) {
+      setState(() {
+        imageRotation = args.rotation;
+      });
+      firstRun = false;
+    }
     return Scaffold(
         appBar: AppBar(
           title: const Text('Medicine Reminder'),
         ),
         // Use a StreamBuilder to display alarms from Firestore
-        body: ListTile(
-          leading: ConstrainedBox(
-              constraints: const BoxConstraints(
-                minWidth: 44,
-                minHeight: 44,
-                maxWidth: 64,
-                maxHeight: 64,
-              ),
-              child: FutureBuilder<String>(
+        body: Column(
+          children: [
+                SizedBox(
+                  //width: 100,
+                  child: Row(
+                    children: [
+                      TextButton.icon(
+                          label: const Text("Rotate"),
+                          icon: const Icon(Icons.rotate_left),
+                          onPressed: () => _rotateImage(args.id, imageRotation)),
+                      TextButton.icon(
+                          label: const Text("Take Picture"),
+                          icon: const Icon(Icons.camera_alt),
+                          onPressed: () => _captureImage(args.id)),
+                    ],
+                  ),
+                ),
+
+            FutureBuilder<String>(
                 future: loadImage(args.id),
                 builder: (BuildContext context,
                     AsyncSnapshot<String> image) {
                   if (image.hasData) {
                     return RotationTransition(
                       turns: AlwaysStoppedAnimation(
-                          args.rotation / 360),
+                          imageRotation / 360),
                       child:
                       Image.network(image.data.toString()),
                     ); // image is ready
@@ -58,11 +76,26 @@ class _ImagePageState extends State<ImagePage> {
                     return Container(); // placeholder while awaiting image
                   }
                 },
-              )),
-          //todo: add the taken checkbox
-          title: Text("image"),
-        ),
+              ),
+            ])
     );
+  }
+
+  void _rotateImage(String id, int rotation) {
+    int newRotation = rotation - 90;
+    setState(() {
+      imageRotation = newRotation;
+    });
+    final FirebaseAuth auth = FirebaseAuth.instance;
+    final CollectionReference meds = FirebaseFirestore.instance
+        .collection('users')
+        .doc(auth.currentUser?.uid)
+        .collection("medicines");
+    meds.doc(id).update({"rotation": newRotation});
+  }
+
+  void _captureImage(String id) {
+    print(id);
   }
 
   Future<String> loadImage(String medId) async {
