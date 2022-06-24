@@ -82,7 +82,12 @@ class _ImagePageState extends State<ImagePage> {
   }
 
   void _rotateImage(String id, int rotation) {
-    int newRotation = rotation - 90;
+    int newRotation;
+    if(rotation == 0) {
+      newRotation = 360;
+    } else {
+      newRotation = rotation - 90;
+    }
     setState(() {
       imageRotation = newRotation;
     });
