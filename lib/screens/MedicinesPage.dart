@@ -98,7 +98,21 @@ class _MedicinesPageState extends State<MedicinesPage> {
                                               image.data.toString()),
                                         )); // image is ready
                                   } else {
-                                    return Container(); // placeholder while awaiting image
+                                    return TextButton.icon(
+                                        label: const Text("Take Picture"),
+                                        icon: const Icon(Icons.camera_alt),
+                                        onPressed: () => Navigator.pushNamed(
+                                        context, ImagePage.routeName,
+                                  arguments: MedicineModel(
+                                  documentSnapshot.id,
+                                  documentSnapshot["alarm_id"],
+                                  documentSnapshot["description"],
+                                  documentSnapshot["image"],
+                                  documentSnapshot["imageDL"],
+                                  documentSnapshot["rotation"],
+                                  documentSnapshot["name"],
+                                  documentSnapshot["taken_date"],
+                                  documentSnapshot["thumbDL"])));
                                   }
                                 },
                               )),

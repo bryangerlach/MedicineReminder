@@ -1,9 +1,10 @@
+import 'package:camera/camera.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
 import '../src/MedicineModel.dart';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -56,7 +57,7 @@ class _ImagePageState extends State<ImagePage> {
                       TextButton.icon(
                           label: const Text("Take Picture"),
                           icon: const Icon(Icons.camera_alt),
-                          onPressed: () => _captureImage(args.id)),
+                          onPressed: () => _showCamera(context, args.id)),
                     ],
                   ),
                 ),
@@ -99,8 +100,18 @@ class _ImagePageState extends State<ImagePage> {
     meds.doc(id).update({"rotation": newRotation});
   }
 
-  void _captureImage(String id) {
-    print(id);
+  void _showCamera(BuildContext context, String id) async {
+
+    final cameras = await availableCameras();
+    final camera = cameras.first;
+
+    final result = await Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => TakePicturePage(camera: camera)));
+    setState(() {
+      //_path = result;
+    });
   }
 
   Future<String> loadImage(String medId) async {
@@ -112,5 +123,60 @@ class _ImagePageState extends State<ImagePage> {
     //get image url from firebase storage
     var url = await ref.getDownloadURL();
     return url;
+  }
+}
+
+class TakePicturePage extends StatefulWidget {
+  final CameraDescription camera;
+  TakePicturePage({required this.camera});
+
+  @override
+  _TakePicturePageState createState() => _TakePicturePageState();
+}
+
+class _TakePicturePageState extends State<TakePicturePage> {
+  late CameraController _cameraController;
+  late Future<void> _initializeCameraControllerFuture;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _cameraController =
+        CameraController(widget.camera, ResolutionPreset.medium);
+
+    _initializeCameraControllerFuture = _cameraController.initialize();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(children: <Widget>[
+      FutureBuilder(
+        future: _initializeCameraControllerFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.done) {
+            return CameraPreview(_cameraController);
+          } else {
+            return Center(child: CircularProgressIndicator());
+          }
+        },
+      ),
+    ]);
+  }
+
+  Future<void> _takePicture(BuildContext context) async {
+    try {
+      await _initializeCameraControllerFuture;
+
+      //final path =
+      //join((await getTemporaryDirectory()).path, '${DateTime.now()}.png');
+
+      final path = await _cameraController.takePicture();
+
+      Navigator.pop(context,path);
+
+    } catch (e) {
+      print(e);
+    }
   }
 }

@@ -1,5 +1,6 @@
 // main.dart
 import 'package:awesome_notifications/awesome_notifications.dart';
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:medicinereminderflutter/screens/DoctorsPage.dart';
@@ -11,7 +12,7 @@ import 'package:medicinereminderflutter/screens/MedicinesPage.dart';
 import 'package:medicinereminderflutter/screens/SettingsPage.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   if(!kIsWeb) {notificationInit();}
   await Firebase.initializeApp(
@@ -22,6 +23,7 @@ void main() async {
           storageBucket: "medicine-reminders.appspot.com",
           messagingSenderId: "887354715842",
           appId: "1:887354715842:web:84279277e19bd45b19955b"));
+
   runApp(const MyApp());
 }
 
