@@ -161,22 +161,51 @@ class _TakePicturePageState extends State<TakePicturePage> {
           }
         },
       ),
+      SafeArea(
+        child: Align(
+          alignment: Alignment.bottomRight,
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: FloatingActionButton(
+              backgroundColor: Colors.black,
+              child: Icon(Icons.camera),
+              onPressed: () {
+                _takePicture(context);
+              },
+            ),
+          ),
+        ),
+      )
     ]);
   }
 
   Future<void> _takePicture(BuildContext context) async {
-    try {
+    //try {
+        print("here i am");
       await _initializeCameraControllerFuture;
 
       //final path =
       //join((await getTemporaryDirectory()).path, '${DateTime.now()}.png');
+      XFile? imageFile;
+      await _cameraController.takePicture().then((XFile? file) {
+        if (mounted) {
+          setState(() {
+            imageFile = file;
+            _cameraController.dispose();
+            //_cameraController = null;
+          });
+          if (file != null) {
+            print('Picture saved to ${file.path}');
+          }
+        }
+      });
 
-      final path = await _cameraController.takePicture();
+      print("I'm still here");
+      //print(path);
+      Navigator.pop(context,imageFile);
 
-      Navigator.pop(context,path);
-
-    } catch (e) {
-      print(e);
-    }
+    //} catch (e) {
+    //  print(e);
+    //}
   }
 }
