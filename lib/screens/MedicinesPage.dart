@@ -116,7 +116,6 @@ class _MedicinesPageState extends State<MedicinesPage> {
                                   }
                                 },
                               )),
-                          //todo: add the taken checkbox
                           title: Text(documentSnapshot['name']),
                           subtitle: Text(documentSnapshot['description']),
                           trailing: SizedBox(

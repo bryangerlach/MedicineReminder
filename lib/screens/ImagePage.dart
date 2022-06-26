@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:camera/camera.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -180,32 +182,57 @@ class _TakePicturePageState extends State<TakePicturePage> {
   }
 
   Future<void> _takePicture(BuildContext context) async {
-    //try {
-        print("here i am");
+    try {
+      // Ensure that the camera is initialized.
       await _initializeCameraControllerFuture;
 
-      //final path =
-      //join((await getTemporaryDirectory()).path, '${DateTime.now()}.png');
-      XFile? imageFile;
-      await _cameraController.takePicture().then((XFile? file) {
-        if (mounted) {
-          setState(() {
-            imageFile = file;
-            _cameraController.dispose();
-            //_cameraController = null;
-          });
-          if (file != null) {
-            print('Picture saved to ${file.path}');
-          }
-        }
-      });
+      // Attempt to take a picture and get the file `image`
+      // where it was saved.
+      final image = await _cameraController.takePicture();
 
-      print("I'm still here");
-      //print(path);
-      Navigator.pop(context,imageFile);
+      // If the picture was taken, display it on a new screen.
+      //await Navigator.of(context).push(
+      //  MaterialPageRoute(
+      //    builder: (context) => DisplayPictureScreen(
+            // Pass the automatically generated path to
+            // the DisplayPictureScreen widget.
+      //      imagePath: image.path,
+      //    ),
+      //  ),
+      //);
+      print(image.path);
+      Directory appDocDir = await getApplicationDocumentsDirectory();
+      String appDocPath = appDocDir.path;
+      String imagePath = '$appDocPath/'+image.name;
+      image.saveTo(imagePath);
+      print(imagePath);
+      _uploadImage(image);
+      Navigator.pop(context);
+    } catch (e) {
+      // If an error occurs, log the error to the console.
+      print(e);
+    }
+  }
 
-    //} catch (e) {
-    //  print(e);
-    //}
+  Future<void> _uploadImage(XFile image) async {
+    //todo: save file location to firestore, upload image to firestore and
+    //todo: save imageDL url to firestore
+  }
+}
+
+// A widget that displays the picture taken by the user.
+class DisplayPictureScreen extends StatelessWidget {
+  final String imagePath;
+
+  const DisplayPictureScreen({super.key, required this.imagePath});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Display the Picture')),
+      // The image is stored as a file on the device. Use the `Image.file`
+      // constructor with the given path to display the image.
+      body: Image.file(File(imagePath)),
+    );
   }
 }
