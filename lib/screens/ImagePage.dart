@@ -114,7 +114,7 @@ class _ImagePageState extends State<ImagePage> {
     String imagePath = '$appDocPath/${photo?.name}';
     photo?.saveTo(imagePath);
     print(imagePath);
-    _uploadImage(photo!, id);
+    _uploadImage(photo!, id, imagePath);
   }
 
   Future<String> loadImage() async {
@@ -129,7 +129,7 @@ class _ImagePageState extends State<ImagePage> {
     return url;
   }
 
-  Future<void> _uploadImage(XFile image, String id) async {
+  Future<void> _uploadImage(XFile image, String id, String imagePath) async {
     final storage = FirebaseStorage.instanceFor(
         bucket: "gs://medicine-reminders.appspot.com");
     final storageRef = FirebaseStorage.instance.ref();
@@ -138,7 +138,7 @@ class _ImagePageState extends State<ImagePage> {
     try {
       await imageRef.putFile(file);
       String imageDL = await imageRef.getDownloadURL();
-      _meds.doc(id).update({"image": image.path, "imageDL": imageDL});
+      _meds.doc(id).update({"image": imagePath, "imageDL": imageDL});
       setState(() {});
     } on FirebaseException catch (e) {
       print("error uploading file");
