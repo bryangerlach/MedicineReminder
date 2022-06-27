@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import '../src/MedicineModel.dart';
+import 'package:image_picker/image_picker.dart';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
 final CollectionReference _meds = FirebaseFirestore.instance
@@ -25,6 +26,7 @@ class ImagePage extends StatefulWidget {
 
 class _ImagePageState extends State<ImagePage> {
   int imageRotation = 0;
+  String medId = "";
   bool firstRun = true;
   @override
   void initState() {
@@ -35,9 +37,10 @@ class _ImagePageState extends State<ImagePage> {
   @override
   Widget build(BuildContext context) {
     final args = ModalRoute.of(context)!.settings.arguments as MedicineModel;
-    if(firstRun) {
+    if (firstRun) {
       setState(() {
         imageRotation = args.rotation;
+        medId = args.id;
       });
       firstRun = false;
     }
@@ -46,47 +49,47 @@ class _ImagePageState extends State<ImagePage> {
           title: const Text('Medicine Reminder'),
         ),
         // Use a StreamBuilder to display alarms from Firestore
-        body: Column(
-          children: [
-                SizedBox(
-                  //width: 100,
-                  child: Row(
-                    children: [
-                      TextButton.icon(
-                          label: const Text("Rotate"),
-                          icon: const Icon(Icons.rotate_left),
-                          onPressed: () => _rotateImage(args.id, imageRotation)),
-                      TextButton.icon(
-                          label: const Text("Take Picture"),
-                          icon: const Icon(Icons.camera_alt),
-                          onPressed: () => _showCamera(context, args.id)),
-                    ],
-                  ),
-                ),
-
-            FutureBuilder<String>(
-                future: loadImage(args.id),
-                builder: (BuildContext context,
-                    AsyncSnapshot<String> image) {
-                  if (image.hasData) {
-                    return RotationTransition(
-                      turns: AlwaysStoppedAnimation(
-                          imageRotation / 360),
-                      child:
-                      Image.network(image.data.toString()),
-                    ); // image is ready
-                  } else {
-                    return Container(); // placeholder while awaiting image
-                  }
-                },
-              ),
-            ])
-    );
+        body: Column(children: [
+          SizedBox(
+            //width: 100,
+            child: Row(
+              children: [
+                TextButton.icon(
+                    label: const Text("Rotate"),
+                    icon: const Icon(Icons.rotate_left),
+                    onPressed: () => _rotateImage(args.id, imageRotation)),
+                TextButton.icon(
+                    label: const Text("Take Picture"),
+                    icon: const Icon(Icons.camera_alt),
+                    onPressed: () => _showCamera(context, args.id)),
+              ],
+            ),
+          ),
+          FutureBuilder<String>(
+            future: loadImage(),
+            builder: (BuildContext context, AsyncSnapshot<String> image) {
+              if (image.hasData) {
+                return Center(
+                    child: InteractiveViewer(
+                        panEnabled: false, // Set it to false
+                        boundaryMargin: EdgeInsets.all(100),
+                        minScale: 1,
+                        maxScale: 10,
+                        child: RotationTransition(
+                          turns: AlwaysStoppedAnimation(imageRotation / 360),
+                          child: Image.network(image.data.toString()),
+                        ))); // image is ready
+              } else {
+                return Container(); // placeholder while awaiting image
+              }
+            },
+          ),
+        ]));
   }
 
   void _rotateImage(String id, int rotation) {
     int newRotation;
-    if(rotation == 0) {
+    if (rotation == 0) {
       newRotation = 360;
     } else {
       newRotation = rotation - 90;
@@ -103,20 +106,19 @@ class _ImagePageState extends State<ImagePage> {
   }
 
   void _showCamera(BuildContext context, String id) async {
-
-    final cameras = await availableCameras();
-    final camera = cameras.first;
-
-    final result = await Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => TakePicturePage(camera: camera)));
-    setState(() {
-      //_path = result;
-    });
+    final ImagePicker _picker = ImagePicker();
+    final XFile? photo = await _picker.pickImage(source: ImageSource.camera);
+    print(photo?.path);
+    Directory appDocDir = await getApplicationDocumentsDirectory();
+    String appDocPath = appDocDir.path;
+    String imagePath = '$appDocPath/${photo?.name}';
+    photo?.saveTo(imagePath);
+    print(imagePath);
+    _uploadImage(photo!, id);
   }
 
-  Future<String> loadImage(String medId) async {
+  Future<String> loadImage() async {
+    //todo: check if image exist in app folder, if not download. should display local image instead of network image above
     //collect the image name
     DocumentSnapshot variable = await _meds.doc(medId).get();
 
@@ -126,113 +128,20 @@ class _ImagePageState extends State<ImagePage> {
     var url = await ref.getDownloadURL();
     return url;
   }
-}
 
-class TakePicturePage extends StatefulWidget {
-  final CameraDescription camera;
-  TakePicturePage({required this.camera});
-
-  @override
-  _TakePicturePageState createState() => _TakePicturePageState();
-}
-
-class _TakePicturePageState extends State<TakePicturePage> {
-  late CameraController _cameraController;
-  late Future<void> _initializeCameraControllerFuture;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _cameraController =
-        CameraController(widget.camera, ResolutionPreset.medium);
-
-    _initializeCameraControllerFuture = _cameraController.initialize();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(children: <Widget>[
-      FutureBuilder(
-        future: _initializeCameraControllerFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
-            return CameraPreview(_cameraController);
-          } else {
-            return Center(child: CircularProgressIndicator());
-          }
-        },
-      ),
-      SafeArea(
-        child: Align(
-          alignment: Alignment.bottomRight,
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: FloatingActionButton(
-              backgroundColor: Colors.black,
-              child: Icon(Icons.camera),
-              onPressed: () {
-                _takePicture(context);
-              },
-            ),
-          ),
-        ),
-      )
-    ]);
-  }
-
-  Future<void> _takePicture(BuildContext context) async {
+  Future<void> _uploadImage(XFile image, String id) async {
+    final storage = FirebaseStorage.instanceFor(
+        bucket: "gs://medicine-reminders.appspot.com");
+    final storageRef = FirebaseStorage.instance.ref();
+    final imageRef = storageRef.child("images/" + image.name);
+    File file = File(image.path);
     try {
-      // Ensure that the camera is initialized.
-      await _initializeCameraControllerFuture;
-
-      // Attempt to take a picture and get the file `image`
-      // where it was saved.
-      final image = await _cameraController.takePicture();
-
-      // If the picture was taken, display it on a new screen.
-      //await Navigator.of(context).push(
-      //  MaterialPageRoute(
-      //    builder: (context) => DisplayPictureScreen(
-            // Pass the automatically generated path to
-            // the DisplayPictureScreen widget.
-      //      imagePath: image.path,
-      //    ),
-      //  ),
-      //);
-      print(image.path);
-      Directory appDocDir = await getApplicationDocumentsDirectory();
-      String appDocPath = appDocDir.path;
-      String imagePath = '$appDocPath/'+image.name;
-      image.saveTo(imagePath);
-      print(imagePath);
-      _uploadImage(image);
-      Navigator.pop(context);
-    } catch (e) {
-      // If an error occurs, log the error to the console.
-      print(e);
+      await imageRef.putFile(file);
+      String imageDL = await imageRef.getDownloadURL();
+      _meds.doc(id).update({"image": image.path, "imageDL": imageDL});
+      setState(() {});
+    } on FirebaseException catch (e) {
+      print("error uploading file");
     }
-  }
-
-  Future<void> _uploadImage(XFile image) async {
-    //todo: save file location to firestore, upload image to firestore and
-    //todo: save imageDL url to firestore
-  }
-}
-
-// A widget that displays the picture taken by the user.
-class DisplayPictureScreen extends StatelessWidget {
-  final String imagePath;
-
-  const DisplayPictureScreen({super.key, required this.imagePath});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Display the Picture')),
-      // The image is stored as a file on the device. Use the `Image.file`
-      // constructor with the given path to display the image.
-      body: Image.file(File(imagePath)),
-    );
   }
 }
