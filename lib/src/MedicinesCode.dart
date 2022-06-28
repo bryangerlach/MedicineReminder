@@ -1,5 +1,9 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 
 class MedicinesCode {
   static Future<void> showMeds() async {
@@ -67,5 +71,48 @@ class MedicinesCode {
             ),
           );
         });
+  }
+
+  static Future<String> loadImage(CollectionReference meds, String medId) async {
+    print("loading image");
+    DocumentSnapshot documentSnapshot = await meds.doc(medId).get();
+    Reference ref = FirebaseStorage.instance.refFromURL(
+        documentSnapshot["imageDL"]);
+    String returnString;
+    if(!kIsWeb) {
+      Directory appDocDir = await getApplicationDocumentsDirectory();
+      String appDocPath = appDocDir.path;
+
+      File imageFile = File('$appDocPath/${documentSnapshot["image"]}');
+      if (!imageFile.existsSync()) {
+        print("file does not exist");
+
+        final downloadImage = ref.writeToFile(imageFile);
+        downloadImage.snapshotEvents.listen((taskSnapshot) {
+          switch (taskSnapshot.state) {
+            case TaskState.running:
+            // TODO: Handle this case.
+              break;
+            case TaskState.paused:
+            // TODO: Handle this case.
+              break;
+            case TaskState.success:
+            //print(imageFile);
+              loadImage(meds, medId);
+              break;
+            case TaskState.canceled:
+            // TODO: Handle this case.
+              break;
+            case TaskState.error:
+            //print("file does not exist on server");
+              break;
+          }
+        });
+      }
+      returnString = imageFile.path;
+    } else {
+      returnString = await ref.getDownloadURL();
+    }
+      return returnString;
   }
 }

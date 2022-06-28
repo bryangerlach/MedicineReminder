@@ -9,6 +9,9 @@ import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import '../src/MedicineModel.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+
+import '../src/MedicinesCode.dart';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
 final CollectionReference _meds = FirebaseFirestore.instance
@@ -66,10 +69,21 @@ class _ImagePageState extends State<ImagePage> {
             ),
           ),
           FutureBuilder<String>(
-            future: loadImage(),
+            future: MedicinesCode.loadImage(_meds,medId),
             builder: (BuildContext context, AsyncSnapshot<String> image) {
-              if (image.hasData) {
+              if (image.hasData && !kIsWeb) {
                 return Center(
+                    child: InteractiveViewer(
+                        panEnabled: false, // Set it to false
+                        boundaryMargin: EdgeInsets.all(100),
+                        minScale: 1,
+                        maxScale: 10,
+                        child: RotationTransition(
+                          turns: AlwaysStoppedAnimation(imageRotation / 360),
+                          child: Image.file(File(image.data.toString())),
+                        ))); // image is ready
+              } else if(image.hasData && kIsWeb) {
+                return Expanded(
                     child: InteractiveViewer(
                         panEnabled: false, // Set it to false
                         boundaryMargin: EdgeInsets.all(100),
@@ -114,22 +128,10 @@ class _ImagePageState extends State<ImagePage> {
     String imagePath = '$appDocPath/${photo?.name}';
     photo?.saveTo(imagePath);
     print(imagePath);
-    _uploadImage(photo!, id, imagePath);
+    _uploadImage(photo!, id);
   }
 
-  Future<String> loadImage() async {
-    //todo: check if image exist in app folder, if not download. should display local image instead of network image above
-    //collect the image name
-    DocumentSnapshot variable = await _meds.doc(medId).get();
-
-    Reference ref = FirebaseStorage.instance.refFromURL(variable["imageDL"]);
-
-    //get image url from firebase storage
-    var url = await ref.getDownloadURL();
-    return url;
-  }
-
-  Future<void> _uploadImage(XFile image, String id, String imagePath) async {
+  Future<void> _uploadImage(XFile image, String id) async {
     final storage = FirebaseStorage.instanceFor(
         bucket: "gs://medicine-reminders.appspot.com");
     final storageRef = FirebaseStorage.instance.ref();
@@ -138,7 +140,7 @@ class _ImagePageState extends State<ImagePage> {
     try {
       await imageRef.putFile(file);
       String imageDL = await imageRef.getDownloadURL();
-      _meds.doc(id).update({"image": imagePath, "imageDL": imageDL});
+      _meds.doc(id).update({"image": image.name, "imageDL": imageDL});
       setState(() {});
     } on FirebaseException catch (e) {
       print("error uploading file");

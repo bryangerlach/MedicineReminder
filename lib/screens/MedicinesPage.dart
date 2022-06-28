@@ -1,12 +1,13 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:intl/intl.dart';
+import 'dart:io';
 import 'package:medicinereminderflutter/src/AlarmModel.dart';
 import 'package:medicinereminderflutter/src/MedicineModel.dart';
 import 'package:medicinereminderflutter/src/MedicinesCode.dart';
 import 'package:medicinereminderflutter/screens/ImagePage.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 //todo: capture image
 //todo: taken today checkbox, makes entry to history
@@ -72,10 +73,32 @@ class _MedicinesPageState extends State<MedicinesPage> {
                                 maxHeight: 64,
                               ),
                               child: FutureBuilder<String>(
-                                future: loadImage(documentSnapshot.id),
+                                future: MedicinesCode.loadImage(_meds,documentSnapshot.id),
                                 builder: (BuildContext context,
                                     AsyncSnapshot<String> image) {
-                                  if (image.hasData) {
+                                  if (image.hasData && !kIsWeb) {
+                                    return RotationTransition(
+                                        turns: AlwaysStoppedAnimation(
+                                            documentSnapshot['rotation'] / 360),
+                                        child: GestureDetector(
+                                          onTap: () {
+                                            Navigator.pushNamed(
+                                                context, ImagePage.routeName,
+                                                arguments: MedicineModel(
+                                                    documentSnapshot.id,
+                                                    documentSnapshot["alarm_id"],
+                                                    documentSnapshot["description"],
+                                                    documentSnapshot["image"],
+                                                    documentSnapshot["imageDL"],
+                                                    documentSnapshot["rotation"],
+                                                    documentSnapshot["name"],
+                                                    documentSnapshot["taken_date"],
+                                                    documentSnapshot["thumbDL"]));
+                                          },
+                                          child: Image.file(
+                                              File(image.data.toString())),
+                                        )); // image is ready
+                                  } else if (image.hasData && kIsWeb) {
                                     return RotationTransition(
                                         turns: AlwaysStoppedAnimation(
                                             documentSnapshot['rotation'] / 360),
@@ -217,16 +240,5 @@ class _MedicinesPageState extends State<MedicinesPage> {
     //MedicinesCode.showMeds();
     MedicinesCode.createEditMed(context, _nameController, _descController,
         action, _meds, alarmId, documentSnapshot);
-  }
-
-  Future<String> loadImage(String medId) async {
-    //collect the image name
-    DocumentSnapshot variable = await _meds.doc(medId).get();
-
-    Reference ref = FirebaseStorage.instance.refFromURL(variable["imageDL"]);
-
-    //get image url from firebase storage
-    var url = await ref.getDownloadURL();
-    return url;
   }
 }
