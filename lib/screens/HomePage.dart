@@ -1,4 +1,3 @@
-import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -8,7 +7,6 @@ import 'package:medicinereminderflutter/screens/HistoryPage.dart';
 import 'package:medicinereminderflutter/screens/MedicinesPage.dart';
 import 'package:medicinereminderflutter/screens/DoctorsPage.dart';
 import 'package:medicinereminderflutter/src/AlarmsCode.dart';
-import 'package:medicinereminderflutter/src/NotificationsCode.dart';
 import 'package:medicinereminderflutter/screens/SettingsPage.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
@@ -33,24 +31,12 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    AwesomeNotifications().actionStream.listen(
-            (ReceivedNotification receivedNotification){
-
-    if(receivedNotification.toMap()['buttonKeyPressed'] == "TAKEN") {
-                NotificationsCode.taken(receivedNotification);
-              } else if(receivedNotification.toMap()['buttonKeyPressed'] == "SNOOZE") {
-                NotificationsCode.snoozed();
-              } else {
-                NotificationsCode.tapped();
-              }
-        }
-    );
-    if(!kIsWeb){AlarmsCode.getScheduledAlarms(_alarms);}
+    if(!kIsWeb) AlarmsCode.getScheduledAlarms(_alarms);
   }
 
   Future<void> _signOut() async {
-    await FirebaseAuth.instance.signOut();
-    await AlarmsCode.cancelAllAlarms();
+    await _auth.signOut();
+    if(!kIsWeb) await AlarmsCode.cancelAllAlarms();
     Navigator.pushReplacementNamed(context, AuthGate.routeName);
   }
 
@@ -83,7 +69,7 @@ class _HomePageState extends State<HomePage> {
         await _alarms
             .doc(documentSnapshot!.id)
             .update({"timeVal": "${selectedTime.hour}:${selectedTime.minute}"});
-        if(documentSnapshot['isOn']) {
+        if(documentSnapshot['isOn'] && !kIsWeb) {
           AlarmsCode.setAlarmWithHM(selectedTime.hour, selectedTime.minute,
               documentSnapshot['notifyId'], documentSnapshot.id);
         }

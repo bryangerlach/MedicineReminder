@@ -137,11 +137,11 @@ class AlarmsCode {
   }
 
   static Future<void> cancelAlarm(DocumentSnapshot? documentSnapshot) async {
-    await AwesomeNotifications().cancelSchedule(documentSnapshot?['notifyId']);
+    if(!kIsWeb) await AwesomeNotifications().cancelSchedule(documentSnapshot?['notifyId']);
   }
 
   static Future<void> cancelAllAlarms() async {
-    await AwesomeNotifications().cancelAllSchedules();
+    if(!kIsWeb) await AwesomeNotifications().cancelAllSchedules();
   }
 
   static Future<void> deleteAlarm(DocumentSnapshot? documentSnapshot,

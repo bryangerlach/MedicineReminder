@@ -86,7 +86,6 @@ class MedicinesCode {
     if(!kIsWeb) {
       Directory appDocDir = await getApplicationDocumentsDirectory();
       String appDocPath = appDocDir.path;
-
       File imageFile = File('$appDocPath/${documentSnapshot["image"]}');
       if (!imageFile.existsSync()) {
         final downloadImage = ref.writeToFile(imageFile);

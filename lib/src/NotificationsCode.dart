@@ -16,7 +16,7 @@ class NotificationsCode {
         .collection("history");
     DateTime now = DateTime.now();
     //String formattedDate = DateFormat.yMd().format(now);
-    String formattedDate = "${now.year.toString()}/${now.month.toString().padLeft(2,'0')}/${now.day.toString()}";
+    String formattedDate = "${now.year.toString()}/${now.month.toString().padLeft(2,'0')}/${now.day.toString().padLeft(2,'0')}";
     String formattedTime = DateFormat.Hm().format(now);
     meds.where("alarm_id", isEqualTo: receivedNotification.payload?["alarmId"])
       .get().then((res) {

@@ -9,15 +9,14 @@ import 'package:medicinereminderflutter/src/MedicinesCode.dart';
 import 'package:medicinereminderflutter/screens/ImagePage.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
-//todo: capture image
 //todo: taken today checkbox, makes entry to history
 
-final FirebaseAuth _auth = FirebaseAuth.instance;
-final CollectionReference _meds = FirebaseFirestore.instance
+FirebaseAuth _auth = FirebaseAuth.instance;
+CollectionReference _meds = FirebaseFirestore.instance
     .collection('users')
     .doc(_auth.currentUser?.uid)
     .collection("medicines");
-final CollectionReference _medNames = FirebaseFirestore.instance
+CollectionReference _medNames = FirebaseFirestore.instance
     .collection('users')
     .doc(_auth.currentUser?.uid)
     .collection("medicineNames");
@@ -34,6 +33,20 @@ class MedicinesPage extends StatefulWidget {
 class _MedicinesPageState extends State<MedicinesPage> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _descController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _auth = FirebaseAuth.instance;
+    _meds = FirebaseFirestore.instance
+        .collection('users')
+        .doc(_auth.currentUser?.uid)
+        .collection("medicines");
+    _medNames = FirebaseFirestore.instance
+        .collection('users')
+        .doc(_auth.currentUser?.uid)
+        .collection("medicineNames");
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -202,7 +215,7 @@ class _MedicinesPageState extends State<MedicinesPage> {
   bool _getTakenToday(String takenDate) {
     DateTime now = DateTime.now();
     //String formattedDate = DateFormat.yMd().format(now);
-    String formattedDate = "${now.year.toString()}/${now.month.toString().padLeft(2,'0')}/${now.day.toString()}";
+    String formattedDate = "${now.year.toString()}/${now.month.toString().padLeft(2,'0')}/${now.day.toString().padLeft(2,'0')}";
     if (takenDate == formattedDate) {
       return true;
     } else {
@@ -218,7 +231,7 @@ class _MedicinesPageState extends State<MedicinesPage> {
       now = DateTime.now().subtract(const Duration(days: 1));
     }
     //String formattedDate = DateFormat.yMd().format(now);
-    String formattedDate = "${now.year.toString()}/${now.month.toString().padLeft(2,'0')}/${now.day.toString()}";
+    String formattedDate = "${now.year.toString()}/${now.month.toString().padLeft(2,'0')}/${now.day.toString().padLeft(2,'0')}";
     _meds.doc(medId).update({"taken_date": formattedDate});
   }
 

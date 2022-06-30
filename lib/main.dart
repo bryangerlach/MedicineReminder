@@ -10,6 +10,7 @@ import 'package:medicinereminderflutter/screens/ImagePage.dart';
 import 'package:medicinereminderflutter/screens/MedicinesPage.dart';
 import 'package:medicinereminderflutter/screens/SettingsPage.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:medicinereminderflutter/src/NotificationsCode.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -53,6 +54,18 @@ void notificationInit() {
       // This is very important to not harm the user experience
       AwesomeNotifications().requestPermissionToSendNotifications();
     }
+    AwesomeNotifications().actionStream.listen(
+            (ReceivedNotification receivedNotification){
+
+          if(receivedNotification.toMap()['buttonKeyPressed'] == "TAKEN") {
+            NotificationsCode.taken(receivedNotification);
+          } else if(receivedNotification.toMap()['buttonKeyPressed'] == "SNOOZE") {
+            NotificationsCode.snoozed();
+          } else {
+            NotificationsCode.tapped();
+          }
+        }
+    );
   });
 
 
