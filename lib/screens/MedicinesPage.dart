@@ -201,7 +201,8 @@ class _MedicinesPageState extends State<MedicinesPage> {
 
   bool _getTakenToday(String takenDate) {
     DateTime now = DateTime.now();
-    String formattedDate = DateFormat.yMd().format(now);
+    //String formattedDate = DateFormat.yMd().format(now);
+    String formattedDate = "${now.year.toString()}/${now.month.toString().padLeft(2,'0')}/${now.day.toString()}";
     if (takenDate == formattedDate) {
       return true;
     } else {
@@ -214,9 +215,10 @@ class _MedicinesPageState extends State<MedicinesPage> {
     if (today) {
       now = DateTime.now();
     } else {
-      now = DateTime.now().subtract(Duration(days: 1));
+      now = DateTime.now().subtract(const Duration(days: 1));
     }
-    String formattedDate = DateFormat.yMd().format(now);
+    //String formattedDate = DateFormat.yMd().format(now);
+    String formattedDate = "${now.year.toString()}/${now.month.toString().padLeft(2,'0')}/${now.day.toString()}";
     _meds.doc(medId).update({"taken_date": formattedDate});
   }
 

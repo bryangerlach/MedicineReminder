@@ -10,8 +10,8 @@ class MedicinesCode {
 
   }
 
-  static Future<void> createEditMed(BuildContext context, TextEditingController _nameController,
-      TextEditingController _descController, String action, CollectionReference _meds,
+  static Future<void> createEditMed(BuildContext context, TextEditingController nameController,
+      TextEditingController descController, String action, CollectionReference meds,
       String alarmId, DocumentSnapshot? documentSnapshot) async {
     await showModalBottomSheet(
         isScrollControlled: true,
@@ -29,11 +29,11 @@ class MedicinesCode {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 TextField(
-                  controller: _nameController,
+                  controller: nameController,
                   decoration: const InputDecoration(labelText: 'Name'),
                 ),
                 TextField(
-                  controller: _descController,
+                  controller: descController,
                   decoration: const InputDecoration(labelText: 'Description'),
                 ),
                 const SizedBox(
@@ -42,27 +42,32 @@ class MedicinesCode {
                 ElevatedButton(
                   child: Text(action == 'create' ? 'Create' : 'Update'),
                   onPressed: () async {
-                    final String name = _nameController.text;
-                    final String desc = _descController.text;
+                    final String name = nameController.text;
+                    final String desc = descController.text;
                     if (action == 'create') {
                       // add a new medicine in the firestore database
 
-                      await _meds.add({
+                      await meds.add({
                         "name": name,
                         "description": desc,
-                        "alarm_id": alarmId
+                        "alarm_id": alarmId,
+                        "image": "",
+                        "imageDL": "",
+                        "rotation": 0,
+                        "taken_date": "",
+                        "thumbDL": "",
                       });
                     }
 
                     if (action == 'update') {
                       // update the current alarm time
-                      await _meds
+                      await meds
                           .doc(documentSnapshot!.id)
                           .update({"name": name, "description": desc});
                     }
 
-                    _nameController.text = '';
-                    _descController.text = '';
+                    nameController.text = '';
+                    descController.text = '';
 
                     Navigator.of(context).pop();
                   },
@@ -74,7 +79,6 @@ class MedicinesCode {
   }
 
   static Future<String> loadImage(CollectionReference meds, String medId) async {
-    print("loading image");
     DocumentSnapshot documentSnapshot = await meds.doc(medId).get();
     Reference ref = FirebaseStorage.instance.refFromURL(
         documentSnapshot["imageDL"]);
@@ -85,8 +89,6 @@ class MedicinesCode {
 
       File imageFile = File('$appDocPath/${documentSnapshot["image"]}');
       if (!imageFile.existsSync()) {
-        print("file does not exist");
-
         final downloadImage = ref.writeToFile(imageFile);
         downloadImage.snapshotEvents.listen((taskSnapshot) {
           switch (taskSnapshot.state) {

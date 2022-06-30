@@ -26,7 +26,7 @@ class _HistoryPageState extends State<HistoryPage> {
       ),
       // Use a StreamBuilder to display alarms from Firestore
       body: StreamBuilder(
-        stream: _history.snapshots(),
+        stream: _history.orderBy("date").snapshots(),
         builder: (context, AsyncSnapshot<QuerySnapshot> streamSnapshot) {
           if (streamSnapshot.hasData) {
             return ListView.builder(
