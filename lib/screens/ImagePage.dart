@@ -1,11 +1,13 @@
 import 'dart:io';
-
+import 'dart:typed_data';
+import 'package:path/path.dart' as p;
 import 'package:camera/camera.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:path/path.dart';
+import 'package:image_picker_web/image_picker_web.dart';
+import 'package:mime_type/mime_type.dart';
 import 'package:path_provider/path_provider.dart';
 import '../src/MedicineModel.dart';
 import 'package:image_picker/image_picker.dart';
@@ -120,15 +122,39 @@ class _ImagePageState extends State<ImagePage> {
   }
 
   void _showCamera(BuildContext context, String id) async {
-    final ImagePicker _picker = ImagePicker();
-    final XFile? photo = await _picker.pickImage(source: ImageSource.camera);
-    print(photo?.path);
-    Directory appDocDir = await getApplicationDocumentsDirectory();
-    String appDocPath = appDocDir.path;
-    String imagePath = '$appDocPath/${photo?.name}';
-    photo?.saveTo(imagePath);
-    print(imagePath);
-    _uploadImage(photo!, id);
+    if(kIsWeb) {
+      final ImagePicker _picker = ImagePicker();
+      XFile? photo = await _picker.pickImage(source: ImageSource.camera);
+      String? path = photo?.path;
+      Uint8List imageData = await XFile(path!).readAsBytes();
+      _uploadImageWeb(imageData,id, photo?.name);
+    } else {
+      final ImagePicker _picker = ImagePicker();
+      XFile? photo = await _picker.pickImage(source: ImageSource.camera);
+      print(photo?.path);
+      Directory appDocDir = await getApplicationDocumentsDirectory();
+      String appDocPath = appDocDir.path;
+      String imagePath = '$appDocPath/${photo?.name}';
+      photo?.saveTo(imagePath);
+      print(imagePath);
+      _uploadImage(photo!, id);
+    }
+  }
+
+  Future<void> _uploadImageWeb(Uint8List imageData, String id, String? name) async {
+    final storage = FirebaseStorage.instanceFor(
+        bucket: "gs://medicine-reminders.appspot.com");
+    final storageRef = FirebaseStorage.instance.ref();
+    final imageRef = storageRef.child("images/${name!}");
+    //UploadTask uploadTask = storageRef.putData(imageData);
+    try {
+      await imageRef.putData(imageData);
+      String imageDL = await imageRef.getDownloadURL();
+      _meds.doc(id).update({"image": name, "imageDL": imageDL});
+      setState(() {});
+    } on FirebaseException catch (e) {
+      print("error uploading file");
+    }
   }
 
   Future<void> _uploadImage(XFile image, String id) async {

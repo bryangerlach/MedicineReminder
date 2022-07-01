@@ -45,7 +45,6 @@ class AlarmsCode {
   }
 
   static Future<void> setAlarmWithHM(int hour, int minutes, int notId, String alarmId) async {
-
     final prefs = await SharedPreferences.getInstance();
     final bool? np = prefs.getBool('note_persistence');
     bool notePersistence = false;

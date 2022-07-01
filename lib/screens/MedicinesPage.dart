@@ -135,7 +135,7 @@ class _MedicinesPageState extends State<MedicinesPage> {
                                         )); // image is ready
                                   } else {
                                     return TextButton.icon(
-                                        label: const Text("Take Picture"),
+                                        label: const Text(""),
                                         icon: const Icon(Icons.camera_alt),
                                         onPressed: () => Navigator.pushNamed(
                                         context, ImagePage.routeName,
