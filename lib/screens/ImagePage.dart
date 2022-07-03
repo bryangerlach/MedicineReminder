@@ -1,13 +1,10 @@
 import 'dart:io';
 import 'dart:typed_data';
-import 'package:path/path.dart' as p;
 import 'package:camera/camera.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker_web/image_picker_web.dart';
-import 'package:mime_type/mime_type.dart';
 import 'package:path_provider/path_provider.dart';
 import '../src/MedicineModel.dart';
 import 'package:image_picker/image_picker.dart';

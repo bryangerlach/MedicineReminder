@@ -15,6 +15,18 @@ import 'package:medicinereminderflutter/src/NotificationsCode.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   if(!kIsWeb) {notificationInit();}
+  AwesomeNotifications().actionStream.listen(
+          (ReceivedNotification receivedNotification){
+
+        if(receivedNotification.toMap()['buttonKeyPressed'] == "TAKEN") {
+          NotificationsCode.taken(receivedNotification);
+        } else if(receivedNotification.toMap()['buttonKeyPressed'] == "SNOOZE") {
+          NotificationsCode.snoozed();
+        } else {
+          NotificationsCode.tapped();
+        }
+      }
+  );
   await Firebase.initializeApp(
       options: const FirebaseOptions(
           apiKey: "AIzaSyCkVX5xS4niK2gFJRgAE9oBuOJBNR2ZdeI",
@@ -54,21 +66,7 @@ void notificationInit() {
       // This is very important to not harm the user experience
       AwesomeNotifications().requestPermissionToSendNotifications();
     }
-    AwesomeNotifications().actionStream.listen(
-            (ReceivedNotification receivedNotification){
-
-          if(receivedNotification.toMap()['buttonKeyPressed'] == "TAKEN") {
-            NotificationsCode.taken(receivedNotification);
-          } else if(receivedNotification.toMap()['buttonKeyPressed'] == "SNOOZE") {
-            NotificationsCode.snoozed();
-          } else {
-            NotificationsCode.tapped();
-          }
-        }
-    );
   });
-
-
 }
 
 class MyApp extends StatelessWidget {

@@ -20,6 +20,10 @@ CollectionReference _medNames = FirebaseFirestore.instance
     .collection('users')
     .doc(_auth.currentUser?.uid)
     .collection("medicineNames");
+CollectionReference _history = FirebaseFirestore.instance
+    .collection('users')
+    .doc(_auth.currentUser?.uid)
+    .collection("history");
 
 class MedicinesPage extends StatefulWidget {
   const MedicinesPage({Key? key}) : super(key: key);
@@ -46,6 +50,10 @@ class _MedicinesPageState extends State<MedicinesPage> {
         .collection('users')
         .doc(_auth.currentUser?.uid)
         .collection("medicineNames");
+    _history = FirebaseFirestore.instance
+        .collection('users')
+        .doc(_auth.currentUser?.uid)
+        .collection("history");
   }
 
   @override
@@ -174,11 +182,12 @@ class _MedicinesPageState extends State<MedicinesPage> {
                               value: _getTakenToday(
                                   documentSnapshot['taken_date']),
                               onChanged: (bool? value) {
+                                //todo: make an entry in history table
                                 bool today = value ?? false;
                                 if (today) {
-                                  _setTakenDate(true, documentSnapshot.id);
+                                  _setTakenDate(true, documentSnapshot);
                                 } else {
-                                  _setTakenDate(false, documentSnapshot.id);
+                                  _setTakenDate(false, documentSnapshot);
                                 }
                               }),
                           title: const Text('Taken today?'),
@@ -223,16 +232,22 @@ class _MedicinesPageState extends State<MedicinesPage> {
     }
   }
 
-  void _setTakenDate(bool today, String medId) {
+  void _setTakenDate(bool today, DocumentSnapshot documentSnapshot) {
     DateTime now;
     if (today) {
       now = DateTime.now();
     } else {
       now = DateTime.now().subtract(const Duration(days: 1));
     }
+    String formattedTime = DateFormat.Hm().format(now);
     //String formattedDate = DateFormat.yMd().format(now);
     String formattedDate = "${now.year.toString()}/${now.month.toString().padLeft(2,'0')}/${now.day.toString().padLeft(2,'0')}";
-    _meds.doc(medId).update({"taken_date": formattedDate});
+    _meds.doc(documentSnapshot.id).update({"taken_date": formattedDate});
+    _history.add({"alarm_id": documentSnapshot["alarm_id"],
+      "date": formattedDate, "med_id": documentSnapshot.id,
+      "med_name": documentSnapshot["name"],
+      "time": formattedTime,
+    });
   }
 
   Future<void> _deleteMedicine(DocumentSnapshot? documentSnapshot) async {

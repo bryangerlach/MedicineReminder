@@ -59,7 +59,7 @@ class AlarmsCode {
         content: NotificationContent(
             id: notId,
             channelKey: 'basic_channel',
-            title: await getMedNames(alarmId),
+            title: "Medicine Reminder",
             body: await getMedNames(alarmId),
             locked: notePersistence,
             payload: {"alarmId": alarmId},),
