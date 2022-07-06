@@ -1,3 +1,4 @@
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -10,10 +11,14 @@ import 'package:medicinereminderflutter/src/AlarmsCode.dart';
 import 'package:medicinereminderflutter/screens/SettingsPage.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
+import '../src/NotificationsCode.dart';
+
 final FirebaseAuth _auth = FirebaseAuth.instance;
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
+
+  static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
   @override
   _HomePageState createState() => _HomePageState();
@@ -31,6 +36,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+
     if(!kIsWeb) AlarmsCode.getScheduledAlarms(_alarms);
   }
 
@@ -66,12 +72,13 @@ class _HomePageState extends State<HomePage> {
 
       if (action == 'update') {
         // update the current alarm time
+        bool repeating = true;
         await _alarms
             .doc(documentSnapshot!.id)
             .update({"timeVal": "${selectedTime.hour}:${selectedTime.minute}"});
         if(documentSnapshot['isOn'] && !kIsWeb) {
           AlarmsCode.setAlarmWithHM(selectedTime.hour, selectedTime.minute,
-              documentSnapshot['notifyId'], documentSnapshot.id);
+              documentSnapshot['notifyId'], documentSnapshot.id, repeating);
         }
       }
     }

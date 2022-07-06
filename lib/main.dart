@@ -15,28 +15,20 @@ import 'package:medicinereminderflutter/src/NotificationsCode.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   if(!kIsWeb) {notificationInit();}
-  AwesomeNotifications().actionStream.listen(
-          (ReceivedNotification receivedNotification){
+  try {
+    await Firebase.initializeApp(
+        options: const FirebaseOptions(
+            apiKey: "AIzaSyCkVX5xS4niK2gFJRgAE9oBuOJBNR2ZdeI",
+            authDomain: "medicine-reminders.firebaseapp.com",
+            projectId: "medicine-reminders",
+            storageBucket: "medicine-reminders.appspot.com",
+            messagingSenderId: "887354715842",
+            appId: "1:887354715842:web:84279277e19bd45b19955b"));
+  }  on FirebaseException catch (e) {
+    print(e);
+  }
 
-        if(receivedNotification.toMap()['buttonKeyPressed'] == "TAKEN") {
-          NotificationsCode.taken(receivedNotification);
-        } else if(receivedNotification.toMap()['buttonKeyPressed'] == "SNOOZE") {
-          NotificationsCode.snoozed();
-        } else {
-          NotificationsCode.tapped();
-        }
-      }
-  );
-  await Firebase.initializeApp(
-      options: const FirebaseOptions(
-          apiKey: "AIzaSyCkVX5xS4niK2gFJRgAE9oBuOJBNR2ZdeI",
-          authDomain: "medicine-reminders.firebaseapp.com",
-          projectId: "medicine-reminders",
-          storageBucket: "medicine-reminders.appspot.com",
-          messagingSenderId: "887354715842",
-          appId: "1:887354715842:web:84279277e19bd45b19955b"));
-
-  runApp(const MyApp());
+    runApp(const MyApp());
 }
 
 void notificationInit() {
@@ -55,7 +47,7 @@ void notificationInit() {
       // Channel groups are only visual and are not required
       channelGroups: [
         NotificationChannelGroup(
-            channelGroupkey: 'basic_channel_group',
+            channelGroupKey: 'basic_channel_group',
             channelGroupName: 'Basic group')
       ],
       debug: true);
@@ -85,6 +77,7 @@ class MyApp extends StatelessWidget {
       //MedicinesPage.routeName: (BuildContext context) => const MedicinesPage(title: "Medicines"),
     };
 
+    NotificationsCode.initializeNotificationsEventListeners();
 
     return MaterialApp(
       // Remove the debug banner

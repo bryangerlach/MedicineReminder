@@ -41,7 +41,7 @@ dependencies:
   cloud_firestore: ^3.1.17
   firebase_auth: ^3.3.19
   firebase_storage: ^10.2.17
-  awesome_notifications: ^0.6.21
+  awesome_notifications: ^0.7.0-beta.5
   shared_preferences: ^2.0.15
   intl: ^0.17.0
   flutterfire_ui: ^0.4.2

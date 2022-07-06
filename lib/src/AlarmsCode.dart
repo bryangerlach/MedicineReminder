@@ -16,8 +16,9 @@ class AlarmsCode {
     ];
     int hour = int.parse(parts[0]);
     int minutes = int.parse(parts[1]);
+    bool repeating = true;
 
-    setAlarmWithHM(hour, minutes, documentSnapshot?['notifyId'], documentSnapshot!.id);
+    setAlarmWithHM(hour, minutes, documentSnapshot?['notifyId'], documentSnapshot!.id, repeating);
   }
 
   static Future<void> getScheduledAlarms(CollectionReference alarms) async {
@@ -44,7 +45,7 @@ class AlarmsCode {
     );
   }
 
-  static Future<void> setAlarmWithHM(int hour, int minutes, int notId, String alarmId) async {
+  static Future<void> setAlarmWithHM(int hour, int minutes, int notId, String alarmId, bool repeating) async {
     final prefs = await SharedPreferences.getInstance();
     final bool? np = prefs.getBool('note_persistence');
     bool notePersistence = false;
@@ -68,12 +69,12 @@ class AlarmsCode {
           NotificationActionButton(
             key: 'TAKEN',
             label: 'Taken',
-            buttonType: ActionButtonType.KeepOnTop,
+            actionType: ActionType.Default,
           ),
           NotificationActionButton(
             key: 'SNOOZE',
             label: 'Snooze',
-            buttonType: ActionButtonType.KeepOnTop,
+            actionType: ActionType.Default,
           )
         ],
         //schedule: NotificationCalendar.fromDate(date: _convertTime(hour, minutes), preciseAlarm: false, repeats: true,));
@@ -81,7 +82,7 @@ class AlarmsCode {
             hour: hour,
             minute: minutes,
             second: 0,
-            repeats: true,
+            repeats: repeating,
             timeZone:
             await AwesomeNotifications().getLocalTimeZoneIdentifier()));
   }
