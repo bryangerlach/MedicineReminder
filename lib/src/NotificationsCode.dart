@@ -5,6 +5,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:intl/intl.dart';
 import 'package:medicinereminderflutter/src/AlarmsCode.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:move_to_background/move_to_background.dart';
 
 class NotificationsCode {
 
@@ -67,11 +69,11 @@ class NotificationsCode {
           });
         }
     });
+    if(!kIsWeb){MoveToBackground.moveTaskToBack();}
   }
 
   static Future<void> snoozed(ReceivedNotification receivedNotification) async {
     print("snoozed");
-    //todo: get snooze minutes from config.
     final prefs = await SharedPreferences.getInstance();
     final int? snoozeMinutes = prefs.getInt('snooze_minutes');
     int sm = 10;

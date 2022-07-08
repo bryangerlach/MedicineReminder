@@ -18,14 +18,14 @@ final FirebaseAuth _auth = FirebaseAuth.instance;
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
 
-  static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+  static final GlobalKey<NavigatorState> navigatorKey =
+      GlobalKey<NavigatorState>();
 
   @override
   _HomePageState createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-
   TimeOfDay selectedTime = TimeOfDay.now();
 
   final CollectionReference _alarms = FirebaseFirestore.instance
@@ -37,12 +37,12 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
 
-    if(!kIsWeb) AlarmsCode.getScheduledAlarms(_alarms);
+    if (!kIsWeb) AlarmsCode.getScheduledAlarms(_alarms);
   }
 
   Future<void> _signOut() async {
     await _auth.signOut();
-    if(!kIsWeb) await AlarmsCode.cancelAllAlarms();
+    if (!kIsWeb) await AlarmsCode.cancelAllAlarms();
     Navigator.pushReplacementNamed(context, AuthGate.routeName);
   }
 
@@ -76,7 +76,7 @@ class _HomePageState extends State<HomePage> {
         await _alarms
             .doc(documentSnapshot!.id)
             .update({"timeVal": "${selectedTime.hour}:${selectedTime.minute}"});
-        if(documentSnapshot['isOn'] && !kIsWeb) {
+        if (documentSnapshot['isOn'] && !kIsWeb) {
           AlarmsCode.setAlarmWithHM(selectedTime.hour, selectedTime.minute,
               documentSnapshot['notifyId'], documentSnapshot.id, repeating);
         }
@@ -156,53 +156,56 @@ class _HomePageState extends State<HomePage> {
                     streamSnapshot.data!.docs[index];
                 return Card(
                   margin: const EdgeInsets.all(10),
-                  child: Column(
-                    children: [
-                      ListTile(
+                  child: Column(children: [
+                    ListTile(
                       title: TextButton(
-                        onPressed: () => _createOrUpdate(documentSnapshot),
-                        child: Text(
-                          AlarmsCode.getTimeAMPM(documentSnapshot['timeVal']),
-                          style: const TextStyle(fontSize: 50),
-                        )),
-                        trailing: Switch(
-                            value: documentSnapshot['isOn'],
-                            onChanged: (value) {
-                              setState(() {
-                                AlarmsCode.updateAlarmStatus(documentSnapshot, value, _alarms);
-                              });
-                            }),),
-                            SizedBox(
-                              //width: 100,
-                              child: Row(
-                                children: [
-                                  // view alarm medicines button
-                                  Expanded(
-                                    child: Align(
-                                      alignment: Alignment.centerLeft,
-                                        child:
-                                          TextButton.icon(
-                                            label: const Text("View Medicines"),
-                                            icon: const Icon(Icons.medication_liquid_rounded),
-                                            onPressed: () => _viewAlarm(
-                                              documentSnapshot.id,
-                                              documentSnapshot['isOn'],
-                                              documentSnapshot['timeVal'])),)),
-                                  //const SizedBox(width: 30,),
-                                  // delete alarm button
-                                  Expanded(
-                                    child: Align(
-                                      alignment: Alignment.centerRight,
-                                      child:
-                                        TextButton.icon(
-                                          label: const Text("Delete"),
-                                          icon: const Icon(Icons.delete),
-                                          onPressed: () => AlarmsCode.deleteAlarm(documentSnapshot,_alarms,context)),))
-                                ],
-                              ),
-                            )]),
-                        );
-
+                          onPressed: () => _createOrUpdate(documentSnapshot),
+                          child: Text(
+                            AlarmsCode.getTimeAMPM(documentSnapshot['timeVal']),
+                            style: const TextStyle(fontSize: 50),
+                          )),
+                      trailing: Switch(
+                          value: documentSnapshot['isOn'],
+                          onChanged: (value) {
+                            setState(() {
+                              AlarmsCode.updateAlarmStatus(
+                                  documentSnapshot, value, _alarms);
+                            });
+                          }),
+                    ),
+                    SizedBox(
+                      //width: 100,
+                      child: Row(
+                        children: [
+                          // view alarm medicines button
+                          Expanded(
+                              child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: TextButton.icon(
+                                label: const Text("View Medicines"),
+                                icon:
+                                    const Icon(Icons.medication_liquid_rounded),
+                                onPressed: () => _viewAlarm(
+                                    documentSnapshot.id,
+                                    documentSnapshot['isOn'],
+                                    documentSnapshot['timeVal'])),
+                          )),
+                          //const SizedBox(width: 30,),
+                          // delete alarm button
+                          Expanded(
+                              child: Align(
+                            alignment: Alignment.centerRight,
+                            child: TextButton.icon(
+                                label: const Text("Delete"),
+                                icon: const Icon(Icons.delete),
+                                onPressed: () => AlarmsCode.deleteAlarm(
+                                    documentSnapshot, _alarms, context)),
+                          ))
+                        ],
+                      ),
+                    )
+                  ]),
+                );
               },
             );
           }

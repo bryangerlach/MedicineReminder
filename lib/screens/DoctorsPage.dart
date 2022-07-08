@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:maps_launcher/maps_launcher.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -14,7 +16,6 @@ class DoctorsPage extends StatefulWidget {
 }
 
 class _DoctorsPageState extends State<DoctorsPage> {
-
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _descController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
@@ -39,33 +40,58 @@ class _DoctorsPageState extends State<DoctorsPage> {
               itemCount: streamSnapshot.data!.docs.length,
               itemBuilder: (context, index) {
                 final DocumentSnapshot documentSnapshot =
-                streamSnapshot.data!.docs[index];
+                    streamSnapshot.data!.docs[index];
                 return Card(
-                  margin: const EdgeInsets.all(10),
-                  child: ListTile(
-                    title: Text(documentSnapshot['name']),
-                    subtitle: Text(documentSnapshot['description']+"\n"+
-                        documentSnapshot['phone']+"\n"+
-                        documentSnapshot['address']),
-                    trailing: SizedBox(
-                      width: 100,
-                      child: Row(
-                        children: [
-                          // edit alarm button
-                          IconButton(
-                              icon: const Icon(Icons.edit),
-                              onPressed: () =>
-                                  _createOrUpdate(documentSnapshot)),
-                          // view alarm medicines button
-                          IconButton(
-                              icon: const Icon(Icons.delete),
-                              onPressed: () =>
-                                  _deleteDoctor(documentSnapshot)),
-                        ],
+                    margin: const EdgeInsets.all(10),
+                    child: Column(children: [
+                      ListTile(
+                        title: Text(documentSnapshot['name']),
+                        subtitle: Text(documentSnapshot['description'] +
+                            "\n" +
+                            documentSnapshot['phone'] +
+                            "\n" +
+                            documentSnapshot['address']),
+                        trailing: SizedBox(
+                          width: 100,
+                          child: Row(
+                            children: [
+                              // edit alarm button
+                              IconButton(
+                                  icon: const Icon(Icons.edit),
+                                  onPressed: () =>
+                                      _createOrUpdate(documentSnapshot)),
+                              // view alarm medicines button
+                              IconButton(
+                                  icon: const Icon(Icons.delete),
+                                  onPressed: () =>
+                                      _deleteDoctor(documentSnapshot)),
+                            ],
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                );
+                      SizedBox(
+                        child: Row(
+                      children: [
+                        Expanded(
+                            child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: TextButton.icon(
+                                    label: const Text("Directions"),
+                                    icon: const Icon(Icons.map),
+                                    onPressed: () => MapsLauncher.launchQuery(
+                                      documentSnapshot['address'])
+                                    ))),
+                         Expanded(
+                            child: Align(
+                                alignment: Alignment.center,
+                                child: TextButton.icon(
+                                    label: const Text("Call"),
+                                    icon: const Icon(Icons.phone),
+                                    onPressed: () => launchUrlString(
+                                        "tel://${documentSnapshot['phone']}")
+                                    ))),
+                      ])),
+                    ]));
               },
             );
           }
@@ -109,10 +135,7 @@ class _DoctorsPageState extends State<DoctorsPage> {
                 left: 20,
                 right: 20,
                 // prevent the soft keyboard from covering text fields
-                bottom: MediaQuery
-                    .of(ctx)
-                    .viewInsets
-                    .bottom + 20),
+                bottom: MediaQuery.of(ctx).viewInsets.bottom + 20),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -155,9 +178,7 @@ class _DoctorsPageState extends State<DoctorsPage> {
 
                     if (action == 'update') {
                       // update the current alarm time
-                      await _doctors
-                          .doc(documentSnapshot!.id)
-                          .update({
+                      await _doctors.doc(documentSnapshot!.id).update({
                         "name": name,
                         "description": desc,
                         "phone": phone,
