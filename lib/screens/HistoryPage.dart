@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../src/AlarmsCode.dart';
+
 final FirebaseAuth _auth = FirebaseAuth.instance;
 
 class HistoryPage extends StatefulWidget {
@@ -26,7 +28,7 @@ class _HistoryPageState extends State<HistoryPage> {
       ),
       // Use a StreamBuilder to display alarms from Firestore
       body: StreamBuilder(
-        stream: _history.orderBy("date",descending:true).limit(30).snapshots(),
+        stream: _history.orderBy("date",descending:true).orderBy("time",descending: true).limit(30).snapshots(),
         builder: (context, AsyncSnapshot<QuerySnapshot> streamSnapshot) {
           if (streamSnapshot.hasData) {
             return ListView.builder(
@@ -40,7 +42,7 @@ class _HistoryPageState extends State<HistoryPage> {
                     title: Text(documentSnapshot['med_name']),
                     subtitle: Text(documentSnapshot['date']),
                     //todo: make time in am/pm format
-                    trailing: Text(documentSnapshot['time']),
+                    trailing: Text(AlarmsCode.getTimeAMPM(documentSnapshot['time'])),
                   ),
                 );
               },
