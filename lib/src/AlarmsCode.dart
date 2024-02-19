@@ -69,12 +69,12 @@ class AlarmsCode {
           NotificationActionButton(
             key: 'TAKEN',
             label: 'Taken',
-            actionType: ActionType.Default,
+            actionType: ActionType.SilentAction,
           ),
           NotificationActionButton(
             key: 'SNOOZE',
             label: 'Snooze',
-            actionType: ActionType.Default,
+            actionType: ActionType.SilentAction,
           )
         ],
         //schedule: NotificationCalendar.fromDate(date: _convertTime(hour, minutes), preciseAlarm: false, repeats: true,));

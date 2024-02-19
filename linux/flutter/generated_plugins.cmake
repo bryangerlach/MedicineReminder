@@ -3,7 +3,9 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
+  awesome_notifications
   desktop_webview_auth
+  file_selector_linux
   maps_launcher
   url_launcher_linux
 )

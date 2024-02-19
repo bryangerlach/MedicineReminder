@@ -33,19 +33,19 @@ dependencies:
   path_provider:
   path:
   image_picker:
-
+  table_calendar:
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
-  cloud_firestore: ^3.1.17
-  firebase_auth: ^3.3.19
-  firebase_storage: ^10.2.17
-  awesome_notifications: ^0.7.0-beta.5
+  cloud_firestore: ^4.2.0
+  firebase_auth: ^4.2.0
+  firebase_storage: ^11.0.7
+  awesome_notifications: ^0.7.4+1
   shared_preferences: ^2.0.15
-  intl: ^0.17.0
+  intl: ^0.18.1
   flutterfire_ui: ^0.4.2
-  image_picker_web: ^2.1.1
+  image_picker_web: ^3.0.0+1
   mime_type: ^1.0.0
   move_to_background: ^1.0.2
   maps_launcher: ^2.0.1
@@ -58,7 +58,7 @@ flutter_icons:
   image_path: "assets/icon/icon.png"
 
 dev_dependencies:
-  flutter_launcher_icons: "^0.9.2"
+  flutter_launcher_icons: ^0.11.0
 
   flutter_test:
     sdk: flutter

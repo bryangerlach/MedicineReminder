@@ -1,4 +1,3 @@
-import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -6,12 +5,12 @@ import 'package:medicinereminderflutter/src/AlarmModel.dart';
 import 'package:medicinereminderflutter/screens/AuthGate.dart';
 import 'package:medicinereminderflutter/screens/HistoryPage.dart';
 import 'package:medicinereminderflutter/screens/MedicinesPage.dart';
+import 'package:medicinereminderflutter/screens/CalendarPage.dart';
 import 'package:medicinereminderflutter/screens/DoctorsPage.dart';
 import 'package:medicinereminderflutter/src/AlarmsCode.dart';
 import 'package:medicinereminderflutter/screens/SettingsPage.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
-import '../src/NotificationsCode.dart';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -108,6 +107,13 @@ class _HomePageState extends State<HomePage> {
                 Navigator.pop(context);
                 Navigator.pushNamed(context, MedicinesPage.routeName,
                     arguments: AlarmModel("all", false, "all"));
+              },
+            ),
+            ListTile(
+              title: const Text('Calendar'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, CalendarPage.routeName);
               },
             ),
             ListTile(
