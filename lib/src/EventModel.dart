@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-
+//todo: the event model should have the user id, this way we can edit/delete shared events.
 class EventModel {
+  String userId;
   final String title;
   final String? description;
   final DateTime date;
@@ -8,6 +9,7 @@ class EventModel {
   final bool isGood;
 
   EventModel({
+    required this.userId,
     required this.title,
     this.description,
     required this.date,
@@ -19,6 +21,7 @@ class EventModel {
       [SnapshotOptions? options]) {
     final data = snapshot.data()!;
     return EventModel(
+      userId: "",
       date: data['date'].toDate(),
       title: data['title'],
       description: data['description'],

@@ -90,7 +90,7 @@ class _EditEventState extends State<EditEvent> {
       print('title cannot be empty');
       return;
     }
-    await FirebaseFirestore.instance.collection('users').doc(_auth.currentUser?.uid).collection('events').doc(widget.event.id).update({
+    await FirebaseFirestore.instance.collection('users').doc(widget.event.userId).collection('events').doc(widget.event.id).update({
       "title": title,
       "description": description,
       "date": Timestamp.fromDate(_selectedDate),

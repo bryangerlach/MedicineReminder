@@ -8,8 +8,11 @@ import '../src/EventModel.dart';
 import '../widgets/event_item.dart';
 import 'AddEvent.dart';
 import 'EditEvent.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
+bool isShared = false;
+String sharedUser = "";
 
 class CalendarPage extends StatefulWidget {
   const CalendarPage({Key? key}) : super(key: key);
@@ -59,7 +62,8 @@ class _CalendarPageState extends State<CalendarPage> {
         .where('date', isLessThanOrEqualTo: lastDay)
         .get();
     for (var doc in snap.docs) {
-      final event =  EventModel.fromFirestore(doc); // Convert to EventModel
+      EventModel event =  EventModel.fromFirestore(doc); // Convert to EventModel
+      event.userId = _auth.currentUser!.uid;
       final day =
       DateTime.utc(event.date.year, event.date.month, event.date.day);
       if (_events[day] == null) {
@@ -67,6 +71,37 @@ class _CalendarPageState extends State<CalendarPage> {
       }
       _events[day]!.add(event);
     }
+    final DocumentReference docRef = FirebaseFirestore.instance
+        .collection('users')
+        .doc(_auth.currentUser?.uid);
+    docRef.get().then(
+        (DocumentSnapshot doc) async {
+          isShared = doc['isShared'];
+          sharedUser = doc['sharedUser'];
+          if (isShared) {
+            //final sharedUser = prefs.getString('shared_cal_user');
+            final snap2 = await FirebaseFirestore.instance
+                .collection('users')
+                .doc(sharedUser)
+                .collection('events')
+                .where('date', isGreaterThanOrEqualTo: firstDay)
+                .where('date', isLessThanOrEqualTo: lastDay)
+                .get();
+            for (var doc in snap2.docs) {
+              EventModel event =  EventModel.fromFirestore(doc); // Convert to EventModel
+              event.userId = sharedUser;
+              final day =
+              DateTime.utc(event.date.year, event.date.month, event.date.day);
+              if (_events[day] == null) {
+                _events[day] = [];
+              }
+              _events[day]!.add(event);
+            }
+            setState(() {});
+          }
+        }
+    );
+
     setState(() {});
   }
 
@@ -173,7 +208,7 @@ class _CalendarPageState extends State<CalendarPage> {
                   );
                   if (delete ?? false) {
                     await FirebaseFirestore.instance
-                        .collection('users').doc(_auth.currentUser?.uid)
+                        .collection('users').doc(event.userId)
                         .collection('events')
                         .doc(event.id)
                         .delete();

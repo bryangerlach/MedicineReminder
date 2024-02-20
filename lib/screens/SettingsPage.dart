@@ -1,6 +1,12 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+final FirebaseAuth _auth = FirebaseAuth.instance;
+bool isShared = false;
+String sharedUser = "";
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({Key? key}) : super(key: key);
@@ -12,12 +18,16 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   bool _persistenceCheckbox = false;
+  bool _sharedCalCheckbox = false;
   int _snoozeValue = 10;
+  String _sharedCalUser = "";
 
   @override
   void initState() {
     super.initState();
 
+    //_loadIsSharedValue();
+    //_loadCalUserValue();
     _loadSwitchValue();
     _loadSnoozeValue();
   }
@@ -26,6 +36,7 @@ class _SettingsPageState extends State<SettingsPage> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       _persistenceCheckbox = (prefs.getBool('note_persistence')) ?? false;
+      //_sharedCalCheckbox = (prefs.getBool('shared_cal')) ?? false;
     });
   }
 
@@ -33,6 +44,28 @@ class _SettingsPageState extends State<SettingsPage> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     _snoozeValue = (prefs.getInt('snooze_minutes')) ?? 10;
     return _snoozeValue.toString();
+  }
+
+  Future<String> _loadCalUserValue() async {
+    final DocumentReference docRef = FirebaseFirestore.instance
+        .collection('users')
+        .doc(_auth.currentUser?.uid);
+    await docRef.get().then(
+            (DocumentSnapshot doc) {
+                _sharedCalUser = doc['sharedUser'];
+            });
+    return _sharedCalUser;
+  }
+
+  Future<bool> _loadIsSharedValue() async {
+    final DocumentReference docRef = FirebaseFirestore.instance
+        .collection('users')
+        .doc(_auth.currentUser?.uid);
+    await docRef.get().then(
+            (DocumentSnapshot doc) {
+          _sharedCalCheckbox = doc['isShared'];
+        });
+    return _sharedCalCheckbox;
   }
 
   _saveSwitchValue() async {
@@ -47,6 +80,16 @@ class _SettingsPageState extends State<SettingsPage> {
     setState(() {
       prefs.setInt('snooze_minutes', _snoozeValue);
     });
+  }
+
+  _saveCalUser() async {
+    await FirebaseFirestore.instance.collection('users').doc(_auth.currentUser?.uid).update({'sharedUser': _sharedCalUser});
+    setState(() {});
+  }
+
+  _saveSharedCal() async {
+    await FirebaseFirestore.instance.collection('users').doc(_auth.currentUser?.uid).update({'isShared': _sharedCalCheckbox});
+    setState(() {});
   }
 
   @override
@@ -95,7 +138,57 @@ class _SettingsPageState extends State<SettingsPage> {
                 } else {
                   return const CircularProgressIndicator();
                 }
-              })
+              }),
+              FutureBuilder<bool>(
+                future: _loadIsSharedValue(), // Replace with your actual future
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    final isSharedCalEnabled = snapshot.data!;
+                    return CheckboxListTile(
+                      title: const Text('Access Shared Calendar?'),
+                      value: isSharedCalEnabled,
+                      onChanged: (bool? value) {
+                        setState(() {
+                          _sharedCalCheckbox = value!;
+                          _saveSharedCal(); // Update the setting based on the new value
+                        });
+                      },
+                      secondary: const Icon(Icons.calendar_month),
+                    );
+                  } else if (snapshot.hasError) {
+                    return Text('Error fetching shared calendar setting: ${snapshot.error}');
+                  } else {
+                    return const CircularProgressIndicator(); // Show a loading indicator
+                  }
+                },
+              ),
+              FutureBuilder<String>(
+                  future: _loadCalUserValue(),
+                  builder: (
+                      BuildContext context,
+                      AsyncSnapshot<String> snapshot,
+                      ) {
+                    if (snapshot.hasData) {
+                      return TextFormField(
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                            labelText: 'Shared User',
+                            hintText: 'Shared User',
+                          ),
+                          initialValue: snapshot.data ?? "",
+                          keyboardType: TextInputType.text,
+                          inputFormatters: <TextInputFormatter>[
+                            FilteringTextInputFormatter.singleLineFormatter
+                          ],
+                          autofocus: false,
+                          onChanged: (String text) {
+                            _sharedCalUser = text;
+                            _saveCalUser();
+                          });
+                    } else {
+                      return const CircularProgressIndicator();
+                    }
+                  }),
         ])));
   }
 }
