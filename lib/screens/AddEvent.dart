@@ -39,17 +39,6 @@ class _AddEventState extends State<AddEvent> {
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
-          // InputDatePickerFormField(
-          //   firstDate: widget.firstDate,
-          //   lastDate: widget.lastDate,
-          //   initialDate: _selectedDate,
-          //   onDateSubmitted: (date) {
-          //     print(date);
-          //     setState(() {
-          //       _selectedDate = date;
-          //     });
-          //   },
-          // ),
           SizedBox(
             height: 200,
             child: CupertinoDatePicker(
@@ -100,7 +89,7 @@ class _AddEventState extends State<AddEvent> {
     await FirebaseFirestore.instance.collection('users').doc(_auth.currentUser?.uid).collection('events').add({
       "title": title,
       "description": description,
-      "date": Timestamp.fromDate(_selectedDate),
+      "date": Timestamp.fromDate(_selectedDate.add(const Duration(hours: 12))),
       "good": _isGood,
     });
     if (mounted) {

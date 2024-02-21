@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../src/EventModel.dart';
@@ -42,16 +43,15 @@ class _EditEventState extends State<EditEvent> {
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
-          InputDatePickerFormField(
-            firstDate: widget.firstDate,
-            lastDate: widget.lastDate,
-            initialDate: _selectedDate,
-            onDateSubmitted: (date) {
-              print(date);
-              setState(() {
-                _selectedDate = date;
-              });
-            },
+          SizedBox(
+            height: 200,
+            child: CupertinoDatePicker(
+              mode: CupertinoDatePickerMode.date,
+              initialDateTime: _selectedDate,
+              onDateTimeChanged: (DateTime newDateTime) {
+                _selectedDate = newDateTime;
+              },
+            ),
           ),
           TextField(
             controller: _titleController,
