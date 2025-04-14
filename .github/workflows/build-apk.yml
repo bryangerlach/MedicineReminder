@@ -20,6 +20,9 @@ jobs:
           distribution: 'zulu'
           java-version: '17' # Or your preferred Java version
 
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
