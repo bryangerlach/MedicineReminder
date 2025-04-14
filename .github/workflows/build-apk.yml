@@ -36,19 +36,21 @@ jobs:
       - name: Build Android APK
         run: flutter build apk --split-per-abi # Or flutter build apk
 
-      - name: Sign the APK (Optional)
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }} # Only sign on push to master
-        uses: appcenter/sign-android@v2
+      - uses: r0adkll/sign-android-release@v1
+        name: Sign app APK
+        continue-on-error: true
+        id: sign-medicinereminder
         with:
-          keystore-file: ${{ secrets.KEYSTORE_FILE }}
-          keystore-password: ${{ secrets.KEYSTORE_PASSWORD }}
-          key-alias: ${{ secrets.KEY_ALIAS }}
-          key-password: ${{ secrets.KEY_PASSWORD }}
-          apk-path: build/app/outputs/apk/release/app-release.apk
-          signed-apk-path: build/app/outputs/apk/release/app-release-signed.apk
+          releaseDirectory: build/app/outputs/apk/release/
+          signingKeyBase64: ${{ secrets.KEYSTORE_FILE }}
+          alias: ${{ secrets.KEY_ALIAS }}
+          keyStorePassword: ${{ secrets.KEYSTORE_PASSWORD }}
+          keyPassword: ${{ secrets.KEY_PASSWORD }}
+        env:
+          BUILD_TOOLS_VERSION: "30.0.2"
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: android-apk
-          path: ${{ steps.sign_the_apk.outputs.signed-apk-path || 'build/app/outputs/apk/release/app-release.apk' }}
+          path: ${{ 'build/app/outputs/apk/release/app-release-signed.apk' || 'build/app/outputs/apk/release/app-release.apk' }}
