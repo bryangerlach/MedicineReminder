@@ -23,6 +23,16 @@ rootProject.buildDir = '../build'
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
 }
+
+subprojects {
+    // add this line for move_to_background to work in android device
+    afterEvaluate {
+        android {
+            compileSdkVersion 34
+          }
+    }
+}
+
 subprojects {
     project.evaluationDependsOn(':app')
 }
@@ -37,11 +47,3 @@ configurations.all {
     }
 }
 
-subprojects {
-    // add this line for move_to_background to work in android device
-    afterEvaluate {
-        android {
-            compileSdkVersion 34
-          }
-    }
-}
