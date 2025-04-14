@@ -3,6 +3,7 @@
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kIsWeb, TargetPlatform;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 /// Default [FirebaseOptions] for use with your Firebase apps.
 ///
@@ -43,40 +44,43 @@ class DefaultFirebaseOptions {
     }
   }
 
-  static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyCkVX5xS4niK2gFJRgAE9oBuOJBNR2ZdeI',
-    appId: '1:887354715842:web:84279277e19bd45b19955b',
-    messagingSenderId: '887354715842',
-    projectId: 'medicine-reminders',
-    authDomain: 'medicine-reminders.firebaseapp.com',
-    storageBucket: 'medicine-reminders.appspot.com',
+  static final FirebaseOptions web = FirebaseOptions(
+    apiKey: dotenv.env['FIREBASE_API_KEY_WEB']!,
+    authDomain: dotenv.env['FIREBASE_AUTH_DOMAIN']!,
+    projectId: dotenv.env['FIREBASE_PROJECT_ID']!,
+    storageBucket: dotenv.env['FIREBASE_STORAGE_BUCKET']!,
+    messagingSenderId: dotenv.env['FIREBASE_MESSAGING_SENDER_ID']!,
+    appId: dotenv.env['FIREBASE_APP_ID_WEB']!,
   );
 
-  static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyCSpMzue846m64a0RtGqFPY4BP3zFXsr4E',
-    appId: '1:887354715842:android:0aed7dca9d24465919955b',
-    messagingSenderId: '887354715842',
-    projectId: 'medicine-reminders',
-    storageBucket: 'medicine-reminders.appspot.com',
+  static final FirebaseOptions android = FirebaseOptions(
+    apiKey: dotenv.env['FIREBASE_API_KEY_ANDROID']!,
+    authDomain: dotenv.env['FIREBASE_AUTH_DOMAIN']!,
+    projectId: dotenv.env['FIREBASE_PROJECT_ID']!,
+    storageBucket: dotenv.env['FIREBASE_STORAGE_BUCKET']!,
+    messagingSenderId: dotenv.env['FIREBASE_MESSAGING_SENDER_ID']!,
+    appId: dotenv.env['FIREBASE_APP_ID_ANDROID']!,
   );
 
-  static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyBNzYz8ZLhK8GAraBVPGNm1yVhbWZysmW4',
-    appId: '1:887354715842:ios:350fc0b6808bcc3119955b',
-    messagingSenderId: '887354715842',
-    projectId: 'medicine-reminders',
-    storageBucket: 'medicine-reminders.appspot.com',
-    iosClientId: '887354715842-6obd057k0fmpcd02hvkiech7cgoa2uvj.apps.googleusercontent.com',
-    iosBundleId: 'com.bryangerlach.medicinereminderflutter',
+  static final FirebaseOptions ios = FirebaseOptions(
+    apiKey: dotenv.env['FIREBASE_API_KEY_IOS']!,
+    authDomain: dotenv.env['FIREBASE_AUTH_DOMAIN']!,
+    projectId: dotenv.env['FIREBASE_PROJECT_ID']!,
+    storageBucket: dotenv.env['FIREBASE_STORAGE_BUCKET']!,
+    messagingSenderId: dotenv.env['FIREBASE_MESSAGING_SENDER_ID']!,
+    appId: dotenv.env['FIREBASE_APP_ID_IOS']!,
+    iosClientId: dotenv.env['FIREBASE_IOS_CLIENT_ID']!,
+    iosBundleId: dotenv.env['FIREBASE_IOS_BUNDLE_ID']!,
   );
 
-  static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyBNzYz8ZLhK8GAraBVPGNm1yVhbWZysmW4',
-    appId: '1:887354715842:ios:350fc0b6808bcc3119955b',
-    messagingSenderId: '887354715842',
-    projectId: 'medicine-reminders',
-    storageBucket: 'medicine-reminders.appspot.com',
-    iosClientId: '887354715842-6obd057k0fmpcd02hvkiech7cgoa2uvj.apps.googleusercontent.com',
-    iosBundleId: 'com.bryangerlach.medicinereminderflutter',
+  static final FirebaseOptions macos = FirebaseOptions(
+    apiKey: dotenv.env['FIREBASE_API_KEY_IOS']!,
+    authDomain: dotenv.env['FIREBASE_AUTH_DOMAIN']!,
+    projectId: dotenv.env['FIREBASE_PROJECT_ID']!,
+    storageBucket: dotenv.env['FIREBASE_STORAGE_BUCKET']!,
+    messagingSenderId: dotenv.env['FIREBASE_MESSAGING_SENDER_ID']!,
+    appId: dotenv.env['FIREBASE_APP_ID_IOS']!,
+    iosClientId: dotenv.env['FIREBASE_IOS_CLIENT_ID']!,
+    iosBundleId: dotenv.env['FIREBASE_IOS_BUNDLE_ID']!,
   );
 }

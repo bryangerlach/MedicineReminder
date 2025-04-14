@@ -89,7 +89,7 @@ class _AddEventState extends State<AddEvent> {
     await FirebaseFirestore.instance.collection('users').doc(_auth.currentUser?.uid).collection('events').add({
       "title": title,
       "description": description,
-      "date": Timestamp.fromDate(_selectedDate.add(const Duration(hours: 12))),
+      "date": Timestamp.fromDate(_selectedDate.add(const Duration(hours: 6))),
       "good": _isGood,
     });
     if (mounted) {

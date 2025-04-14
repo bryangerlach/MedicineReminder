@@ -1,0 +1,54 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ master ] # Trigger on pushes to the master branch (adjust as needed)
+  workflow_dispatch: # Enable manual triggering of the workflow
+
+jobs:
+  build:
+    name: Build and Sign APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17' # Or your preferred Java version
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 'stable' # Specify your desired Flutter version (e.g., 'stable', '3.10.x')
+          channel: 'stable' # Or 'beta', 'dev'
+
+      - name: Get Flutter dependencies
+        run: flutter pub get
+
+      - name: Load environment variables
+        run: |
+          echo "${{ secrets.DOT_ENV_CONTENT }}" > .env
+
+      - name: Build Android APK
+        run: flutter build apk --split-per-abi # Or flutter build apk
+
+      - name: Sign the APK (Optional)
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }} # Only sign on push to master
+        uses: appcenter/sign-android@v2
+        with:
+          keystore-file: ${{ secrets.KEYSTORE_FILE }}
+          keystore-password: ${{ secrets.KEYSTORE_PASSWORD }}
+          key-alias: ${{ secrets.KEY_ALIAS }}
+          key-password: ${{ secrets.KEY_PASSWORD }}
+          apk-path: build/app/outputs/apk/release/app-release.apk
+          signed-apk-path: build/app/outputs/apk/release/app-release-signed.apk
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: ${{ steps.sign_the_apk.outputs.signed-apk-path || 'build/app/outputs/apk/release/app-release.apk' }}

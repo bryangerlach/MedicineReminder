@@ -51,6 +51,7 @@ dependencies:
   move_to_background: ^1.0.2
   maps_launcher: ^2.0.1
   url_launcher: ^6.1.4
+  flutter_dotenv: ^5.2.1
 
 
 flutter_icons:

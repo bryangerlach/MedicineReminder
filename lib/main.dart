@@ -12,29 +12,35 @@ import 'package:medicinereminderflutter/screens/CalendarPage.dart';
 import 'package:medicinereminderflutter/screens/SettingsPage.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:medicinereminderflutter/src/NotificationsCode.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  if(!kIsWeb) {notificationInit();}
+  await dotenv.load(fileName: ".env"); // Load the .env file
+  if (!kIsWeb) {
+    notificationInit();
+  }
   try {
     await Firebase.initializeApp(
-        options: const FirebaseOptions(
-            apiKey: "AIzaSyCkVX5xS4niK2gFJRgAE9oBuOJBNR2ZdeI",
-            authDomain: "medicine-reminders.firebaseapp.com",
-            projectId: "medicine-reminders",
-            storageBucket: "medicine-reminders.appspot.com",
-            messagingSenderId: "887354715842",
-            appId: "1:887354715842:web:84279277e19bd45b19955b"));
-  }  on FirebaseException catch (e) {
+      options: FirebaseOptions(
+        apiKey: dotenv.env['FIREBASE_API_KEY_WEB']!,
+        authDomain: dotenv.env['FIREBASE_AUTH_DOMAIN']!,
+        projectId: dotenv.env['FIREBASE_PROJECT_ID']!,
+        storageBucket: dotenv.env['FIREBASE_STORAGE_BUCKET']!,
+        messagingSenderId: dotenv.env['FIREBASE_MESSAGING_SENDER_ID']!,
+        appId: dotenv.env['FIREBASE_APP_ID_WEB']!,
+      ),
+    );
+  } on FirebaseException catch (e) {
     print(e);
   }
 
-    runApp(const MyApp());
+  runApp(const MyApp());
 }
 
 void notificationInit() {
   AwesomeNotifications().initialize(
-    // set the icon to null if you want to use the default app icon
+      // set the icon to null if you want to use the default app icon
       'resource://drawable/ic_small_pill',
       [
         NotificationChannel(
