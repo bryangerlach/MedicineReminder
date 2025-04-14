@@ -61,6 +61,7 @@ flutter_icons:
 
 dev_dependencies:
   flutter_launcher_icons: ^0.11.0
+  win32: ^5.5.4
 
   flutter_test:
     sdk: flutter
