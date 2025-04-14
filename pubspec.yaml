@@ -48,7 +48,7 @@ dependencies:
   firebase_ui_auth:
   image_picker_web: ^3.0.0+1
   mime_type: ^1.0.0
-  move_to_background: ^1.0.2
+  move_to_background:
   maps_launcher: ^2.0.1
   url_launcher: ^6.1.4
   flutter_dotenv: ^5.2.1
