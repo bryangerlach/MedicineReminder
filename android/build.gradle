@@ -36,3 +36,12 @@ configurations.all {
         force 'androidx.core:core-ktx:1.6.0'
     }
 }
+
+subprojects {
+    // add this line for move_to_background to work in android device
+    afterEvaluate {
+        android {
+            compileSdkVersion 34
+          }
+    }
+}
