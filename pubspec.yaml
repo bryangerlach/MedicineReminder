@@ -32,21 +32,21 @@ dependencies:
   camera:
   path_provider:
   path:
-  image_picker:
+  image_picker: ^1.1.2
   table_calendar:
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
-  cloud_firestore: ^4.2.0
+  cloud_firestore: 
   firebase_auth:
-  firebase_storage: ^11.0.7
+  firebase_storage: 
   awesome_notifications: 
   shared_preferences: ^2.0.15
-  intl:
+  intl: 
   #flutterfire_ui: ^0.4.2
   firebase_ui_auth:
-  image_picker_web:
+  image_picker_web: ^4.0.0
   mime_type: ^1.0.0
   move_to_background:
   maps_launcher: ^2.0.1
@@ -61,7 +61,7 @@ flutter_icons:
 
 dev_dependencies:
   flutter_launcher_icons: ^0.11.0
-  win32: ^5.5.4
+  #win32: ^5.5.4
 
   flutter_test:
     sdk: flutter
@@ -88,6 +88,8 @@ flutter:
   # assets:
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
+  assets:
+  - dotenv
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
